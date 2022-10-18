@@ -1441,14 +1441,35 @@ export class WalletRPC {
                     if (!data.result.service_node_states) {
                         data.result.service_node_states = []
                     }                  
-                    let operatorPools = data.result.service_node_states.filter(c => c.operator_address === this.wallet_state.address)
-                    operatorPools.sort(this.poolListHeightSorter(true))
-                    let otherPools = data.result.service_node_states.filter(c => c.operator_address !== this.wallet_state.address)
-                    otherPools.sort(this.poolListHeightSorter(false))
 
+
+                    let contributorPools = []
+                    let otherPools = []
+                    for (let pool of data.result.service_node_states) {
+                        if (pool.operator_address !== this.wallet_state.address) {                    
+                            if (pool.contributors.some(k => k.address === this.wallet_state.address)) {
+                                pool.is_contributor = true
+                                pool.is_operator = false
+                                contributorPools.push(pool)
+                            }
+                            else {
+                                pool.is_contributor = false
+                                pool.is_operator = false
+                                otherPools.push(pool)
+                            }
+                        }
+                        else {
+                            pool.is_contributor = false
+                            pool.is_operator = true
+                            otherPools.push(pool)
+                        }
+                    }
+
+                    otherPools.sort(this.poolListHeightSorter)
+                    contributorPools.sort(this.poolListHeightSorter)
                     let wallet = {
                         pools: {
-                            pool_list: operatorPools.concat(otherPools)
+                            pool_list: contributorPools.concat(otherPools)
                         }
                     }
                     resolve(wallet)
@@ -1459,9 +1480,7 @@ export class WalletRPC {
         })
     }
 
-    poolListHeightSorter = (is_operator = false) => (poolA, poolB) => {
-        poolA.is_operator = is_operator
-        poolB.is_operator = is_operator
+    poolListHeightSorter(poolA, poolB) {
         if (poolA.registration_height === poolB.registration_height) {
             return 0
         }
@@ -2043,8 +2062,6 @@ export class WalletRPC {
             options.timeout = timeout
         }
 
-        // console.log(method)
-
         return this.queue.add(() => {
             return request(options)
                 .then((response) => {
@@ -2096,40 +2113,13 @@ export class WalletRPC {
         }
         return new Promise((resolve, reject) => {
             console.log(this.walletRPCProcesses.length, 'wallet quit walletRPCProcesses>>>>>>>>>>')
-            let walletRPCProcess = this.walletRPCProcesses.pop()
-            // while (walletRPCProcess) {
+            for (let index = this.walletRPCProcesses.length - 1; index >= 0; index--) {
+                const walletRPCProcess = this.walletRPCProcesses[index];
                 console.log(walletRPCProcess.pid, 'wallet quit pid>>>>>>>>>>')
-                // normally we would exit wallet after this promise
-                // however if the wallet is not responsive to RPC
-                // requests then we must forcefully close it below
                 this.closeWallet().then(_ => {
                     walletRPCProcess.kill("SIGTERM")
-                // let t1 = setTimeout(() => {
-                //     walletRPCProcess.on("close", code => {
-                //         clearTimeout(this.forceKill)
-                //         clearTimeout(t1)
-                //         console.log('wallet quit close>>>>>>>>>>')
-
-                //     })
-                //     walletRPCProcess.on("error", code => {
-                //         clearTimeout(this.forceKill)
-                //         clearTimeout(t1)
-                //         console.log('wallet quit error>>>>>>>>>>')
-                //     })
-                //     // Force kill after 20 seconds
-                //     this.forceKill = setTimeout(() => {
-                //         walletRPCProcess.kill("SIGKILL")
-                //     }, 20000)
-
-                //     // Force kill if the rpc is syncing
-                //     const signal = this.isRPCSyncing ? "SIGKILL" : "SIGTERM"
-                //     walletRPCProcess.kill(signal)
-                // }, 2500)
-            })
-
-                // walletRPCProcess = this.walletRPCProcesses.pop()
-            // }
-            this.walletRPCProcesses = null
+                })
+            }
             console.log('wallet quit done>>>>>>>>>>')
             resolve()
         })

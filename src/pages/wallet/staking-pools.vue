@@ -10,7 +10,7 @@
                 </h5>
                 <h5 v-if="tx_list.length != 0" style="padding-top:0px;margin:1%;text-align: justify;">Monthly Yield:
                     {{
-                        Number((((720 / tx_list.length) * 5.4 * 30) / (tx_list[0].staking_requirement / 1e4) * 100).toFixed(2)).toLocaleString()
+                        Number((((720 / tx_list.length) * 5.4 * 30) / (tx_list[0].staking_requirement / 1e4) * 100).toFixed(4)).toLocaleString()
                     }}%</h5>
                 <h5 v-if="tx_list.length === 0" style="padding-top:0px;margin:1%;text-align: justify;">Monthly Yield:
                     {{
@@ -59,15 +59,15 @@
             </div>
         </div>
 
-        <div v-if="staked_pools.length != 0" class="row justify-center" style="margin-bottom:0%;padding-bottom:0px">
+        <div v-if="staked_pools.length > 0" class="row justify-center" style="margin-bottom:0%;padding-bottom:0px">
             <h4 style="padding-bottom:0px;margin-bottom:0%;">Staked Pools</h4>
         </div>
-        <div v-if="staked_pools.length != 0" class="row q-pt-sm q-mx-md q-mb-sm items-end non-selectable">
+        <div v-if="staked_pools.length > 0" class="row q-pt-sm q-mx-md q-mb-sm items-end non-selectable">
             <div style="padding-top: 5px; margin-left: auto; margin-right: auto" class="tx-list">
                 <div class="row justify-center">
                     <div v-for="item in staked_pools" :key="item.service_node_pubkey">
                         <div class="col-2" style="padding: 2em; ">
-                            <div :class="{'contributor': true}">
+                            <div :class="{'operator-address': item.is_operator, 'operator': true}">
                                 <h6 class="type" style="color:white">
                                     Oracle Node ID: <br/>{{
                                         item.service_node_pubkey.splice(0, 4)
@@ -102,7 +102,7 @@
                                                label="Stake"/>
                                     </q-field>
                                 </div>
-                                <div>Contributor</div>
+                                <div>{{item.is_operator ? 'Operator': '&nbsp;'}}</div>
                                 <div v-if="!isFull(item.contributors)">
                                     <div style="padding-bottom: 2em"/>
                                 </div>
@@ -123,7 +123,7 @@
                 <div class="row justify-center">
                     <div v-for="(item, index) in tx_list" :key="index">
                         <div v-if="isFull(item)" class="col-2" style="padding: 1em;">
-                            <div :class="{'operator-address': item.is_operator, 'operator': true}">
+                            <div :class="{'contributor-address': item.is_contributor, 'contributor': true}">
                                 <h6 class="type" style="color:white">
                                     Oracle Node ID: {{
                                         item.service_node_pubkey.slice(0, 4)
@@ -156,7 +156,7 @@
                                                label="Stake"/>
                                     </q-field>
                                 </div>
-                                <div>{{item.is_operator ? 'Operator': '&nbsp;'}}</div>
+                                <div>{{item.is_contributor ? 'Contributor': '&nbsp;'}}</div>
                                 <div v-if="!isFull(item.contributors)">
                                     <div style="padding-bottom: 2em"/>
                                 </div>
@@ -506,6 +506,13 @@ export default {
         text-align: center;
     }
     .contributor {
+        background-color: #222222; 
+        border-radius: 5px;
+        margin:auto; 
+        padding: 5px;
+         text-align: center;
+    }
+    .contributor-address {
         background-color: rgb(19, 0, 128);
         border-radius: 5px;
         margin:auto; 
