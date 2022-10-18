@@ -1,6 +1,6 @@
 {
   "name": "equilibria-wallet-atom",
-  "version": "13.2.2",
+  "version": "13.2.3",
   "daemonVersion": "13.2.0",
   "description": "Modern GUI interface for Equilibria",
   "productName": "Equilibria Wallet",
@@ -29,7 +29,7 @@
     "electron-window-state": "^5.0.3",
     "electron-log": "^4.0.6",
     "electron-progressbar": "^1.2.0",
-    "electron-updater": "^4.2.0",
+    "electron-updater": "4.3.9",
     "fs-extra": "^8.1.0",
     "isomorphic-unfetch": "^3.1.0",
     "nvm": "0.0.4",
@@ -48,6 +48,7 @@
     "upath": "^1.2.0"
   },
   "devDependencies": {
+    "@types/node": "^18.11.0",
     "babel-eslint": "^10.1.0",
     "devtron": "^1.4.0",
     "electron": "^4.2.12",
@@ -73,6 +74,11 @@
     "node": ">= 8.9.0",
     "npm": ">= 5.6.0",
     "yarn": ">= 1.6.0"
+  },
+  "compilerOptions": {
+    "types": [
+      "node"
+    ]
   },
   "browserslist": [
     "> 1%",
