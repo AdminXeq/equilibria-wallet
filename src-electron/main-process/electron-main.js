@@ -1,5 +1,6 @@
 import { app, ipcMain, BrowserWindow, Menu, dialog } from "electron"
 import { Backend } from "./modules/backend"
+import { checkForUpdate } from "./auto-updater"
 import menuTemplate from "./menu"
 import isDev from "electron-is-dev"
 const portscanner = require("portscanner")
@@ -22,6 +23,7 @@ if (process.env.PROD) {
 let mainWindow, backend
 let showConfirmClose = true
 let forceQuit = false
+let installUpdate = false
 
 const portInUse = function (port, callback) {
     var server = net.createServer(function (socket) {
@@ -60,6 +62,9 @@ function createWindow () {
     })
 
     mainWindow.on("close", (e) => {
+      if(installUpdate) {
+             return
+         }
         if (process.platform === "darwin") {
             if (forceQuit) {
                 forceQuit = false
@@ -155,6 +160,22 @@ function createWindow () {
 }
 
 app.on("ready", () => {
+
+  console.log(checkForUpdate, 'definitely is run in here')
+     checkForUpdate(
+         autoUpdater => {
+         if (mainWindow) {
+             mainWindow.webContents.send("showQuitScreen")
+         }
+
+         const promise = backend ? backend.quit() : Promise.resolve()
+         promise.then(() => {
+             installUpdate = true
+             backend = null
+             autoUpdater.quitAndInstall()
+         })
+     })
+
     if (process.platform === "darwin") {
         const menu = Menu.buildFromTemplate(menuTemplate)
         Menu.setApplicationMenu(menu)
@@ -177,6 +198,11 @@ app.on("activate", () => {
 })
 
 app.on("before-quit", async () => {
+
+   if (installUpdate) {
+         return
+     }
+
     try {
         if (process.platform === "darwin") {
             forceQuit = true

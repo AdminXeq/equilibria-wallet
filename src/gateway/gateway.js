@@ -45,6 +45,12 @@ export class Gateway extends EventEmitter {
         })
     }
 
+    ipcRenderer.on("showQuitScreen", () => {
+            if (this.router) {
+                this.router.replace({ path: "/quit" })
+            }
+        })
+
     open () {
         this.app.store.commit("gateway/set_app_data", {
             status: {
