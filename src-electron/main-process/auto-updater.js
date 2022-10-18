@@ -30,7 +30,7 @@
          console.log(`Update available: ${info.version}`)
 
          const message = `Update ${info.version} found. Do you want to download the update?`
-         const detail = `View the release notes at: https://github.com/equilibriacc/equilibria-wallet/releases/tag/v${info.version}`
+         const detail = `View the release notes at: https://github.com/adminxeq/equilibria-wallet/releases/tag/v${info.version}`
 
          dialog.showMessageBox({
              type: "info",

@@ -1,6 +1,6 @@
 {
   "name": "equilibria-wallet-atom",
-  "version": "13.2.1",
+  "version": "13.2.2",
   "daemonVersion": "13.2.0",
   "description": "Modern GUI interface for Equilibria",
   "productName": "Equilibria Wallet",
