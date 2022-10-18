@@ -1,12 +1,12 @@
 {
   "name": "equilibria-wallet-atom",
-  "version": "13.2.3",
+  "version": "13.2.2",
   "daemonVersion": "13.2.0",
   "description": "Modern GUI interface for Equilibria",
   "productName": "Equilibria Wallet",
   "repository": {
     "type": "git",
-    "url": "https://github.com/adminxeq/equilibria-wallet.git"
+    "url": "https://github.com/equilibriacc/equilibria-wallet.git"
   },
   "cordovaId": "com.equilibria.wallet",
   "author": {
