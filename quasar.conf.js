@@ -181,9 +181,11 @@ module.exports = function (ctx) {
                 // directories: {
                 //     buildResources: "src-electron/build"
                 // },
+                artifactName: "equilibira-wallet-${version}-${os}.${ext}",
+                publish: "github",
 
                 linux: {
-                    target: ["AppImage", "snap", "tar.xz"],
+                    target: ["AppImage", "tar.xz"],
                     icon: "src-electron/icons/icon_512x512.png",
                     category: "Finance"
                 },

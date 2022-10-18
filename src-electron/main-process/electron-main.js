@@ -62,9 +62,7 @@ function createWindow () {
     })
 
     mainWindow.on("close", (e) => {
-      if(installUpdate) {
-             return
-         }
+      if(installUpdate) { return }
         if (process.platform === "darwin") {
             if (forceQuit) {
                 forceQuit = false
@@ -95,14 +93,11 @@ function createWindow () {
         // In dev mode, this will launch a blank white screen
         if (restart && !isDev) app.relaunch()
 
-        if (backend) {
-            backend.quit().then(() => {
-                backend = null
-                app.quit()
-            })
-        } else {
-            app.quit()
-        }
+        const promise = backend ? backend.quit() : Promise.resolve()
+         promise.then(() => {
+             backend = null
+             app.quit()
+        })
     })
 
     mainWindow.webContents.on("did-finish-load", () => {
@@ -161,20 +156,18 @@ function createWindow () {
 
 app.on("ready", () => {
 
-  console.log(checkForUpdate, 'definitely is run in here')
-     checkForUpdate(
-         autoUpdater => {
-         if (mainWindow) {
-             mainWindow.webContents.send("showQuitScreen")
-         }
+  checkForUpdate(autoUpdater => {
+           if (mainWindow) {
+               mainWindow.webContents.send("showQuitScreen")
+           }
 
-         const promise = backend ? backend.quit() : Promise.resolve()
-         promise.then(() => {
-             installUpdate = true
-             backend = null
-             autoUpdater.quitAndInstall()
-         })
-     })
+           const promise = backend ? backend.quit() : Promise.resolve()
+           promise.then(() => {
+               installUpdate = true
+               backend = null
+               autoUpdater.quitAndInstall()
+           })
+       })
 
     if (process.platform === "darwin") {
         const menu = Menu.buildFromTemplate(menuTemplate)

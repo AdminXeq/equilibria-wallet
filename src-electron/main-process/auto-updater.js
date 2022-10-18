@@ -1,95 +1,84 @@
- import { dialog } from "electron"
- import isDev from "electron-is-dev"
- import { autoUpdater } from "electron-updater"
- import ProgressBar from "electron-progressbar"
+import { dialog } from "electron"
+import isDev from "electron-is-dev"
+import { autoUpdater } from "electron-updater"
+import ProgressBar from "electron-progressbar"
 
- let progressBar = null
- let isUpdating = false
- let downloadAndInstall = false
+let progressBar = null
+let isUpdating = false
+let downloadAndInstall = false
 
- function checkForUpdate (onQuitAndInstall) {
-     // Disable for development
-     if (isDev) {
-         return
-     }
+function checkForUpdate (onQuitAndInstall) {
+    // Disable for development
+    if (isDev) {
+        return
+    }
 
-     autoUpdater.logger = console
-     autoUpdater.autoDownload = false
+    autoUpdater.logger = console
+    autoUpdater.autoDownload = false
 
-     autoUpdater.on("error", (err) => {
-         if (isUpdating) {
-             dialog.showErrorBox("Update Error: ", err == null ? "unknown" : err.message)
-             isUpdating = false
-             console.error("Error in auto-updater.", err.message)
-         }
-     })
+    autoUpdater.on("error", (err) => {
+        if (isUpdating) {
+            dialog.showErrorBox("Update Error: ", err == null ? "unknown" : err.message)
+            isUpdating = false
+            console.error("Error in auto-updater.", err.message)
+        }
+    })
 
-     // let autoUpdater listen to error event; but why we need to do a condition check to see status of isUpdating.
+    autoUpdater.on("update-available", info => {
+        console.log(`Update available: ${info.version}`)
 
-     autoUpdater.on("update-available", info => {
-         console.log(`Update available: ${info.version}`)
+        const message = `Update ${info.version} found. Do you want to download the update?`
+        const detail = `View the release notes at: https://github.com/adminxeq/equilibria-wallet/releases/tag/v${info.version}`
 
-         const message = `Update ${info.version} found. Do you want to download the update?`
-         const detail = `View the release notes at: https://github.com/adminxeq/equilibria-wallet/releases/tag/v${info.version}`
+        dialog.showMessageBox({
+            type: "info",
+            title: "Update available",
+            message,
+            detail,
+            buttons: ["Download and Install", "Download and Install Later", "No"],
+            defaultId: 0
+        }, (buttonIndex) => {
+            // Download and install
+            if (buttonIndex === 0) {
+                downloadAndInstall = true
+                if (!progressBar) {
+                    progressBar = new ProgressBar({
+                        indeterminate: false,
+                        title: "Downloading...",
+                        text: `Downloading wallet v${info.version}`
+                    })
+                }
+            }
 
-         dialog.showMessageBox({
-             type: "info",
-             title: "Update available",
-             message,
-             detail,
-             buttons: ["Download and Install", "Download and Install Later", "No"],
-             defaultId: 0
-         }, (buttonIndex) => {
-             // Download and install
-             if (buttonIndex === 0) {
-                 // if the button index is select as 0; set the downloadAndInstall to true;
-                 downloadAndInstall = true
-                 if (!progressBar) {
+            // Download
+            if (buttonIndex !== 2) {
+                isUpdating = true
+                autoUpdater.downloadUpdate()
+            }
+        })
+    })
 
-                     //after you set the downloadAndInstall as true;
-                     // show the progress bar
-                     progressBar = new ProgressBar({
-                         indeterminate: false,
-                         title: "Downloading...",
-                         text: `Downloading wallet v${info.version}`
-                     })
-                 }
-             }
+    autoUpdater.on("download-progress", progress => {
+        progressBar.value = progress.percent
+    })
 
-             // Download
-             if (buttonIndex !== 2) {
-                 isUpdating = true
-                 autoUpdater.downloadUpdate()
-             }
-         })
-     })
+    autoUpdater.on("update-downloaded", () => {
+        console.log("Update downloaded")
+        isUpdating = false
 
+        if (progressBar) {
+            progressBar.setCompleted()
+            progressBar = null
+        }
 
+        // If download and install was selected then quit and install
+        if (downloadAndInstall && onQuitAndInstall) {
+            onQuitAndInstall(autoUpdater)
+            downloadAndInstall = false
+        }
+    })
 
-     autoUpdater.on("download-progress", progress => {
-         progressBar.value = progress.percent
-     })
+    autoUpdater.checkForUpdates()
+}
 
-     autoUpdater.on("update-downloaded", () => {
-         console.log("Update downloaded")
-         isUpdating = false
-
-         if (progressBar) {
-             progressBar.setCompleted()
-             progressBar = null
-             //indicate the download progress finishes and set the progressBar back to null
-         }
-
-         // If download and install was selected then quit and install
-         if (downloadAndInstall && onQuitAndInstall) {
-             onQuitAndInstall(autoUpdater)
-             downloadAndInstall = false
-
-         }
-     })
-
-     autoUpdater.checkForUpdates()
- }
-
-
- export { checkForUpdate }
+export { checkForUpdate }
