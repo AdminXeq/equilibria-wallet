@@ -993,7 +993,7 @@ export class WalletRPC {
 
                         this.sendGateway("set_tx_status", {
                             code: 0,
-                            sending: true
+                            sending: false
                         })
                     })
                 }
@@ -1484,7 +1484,7 @@ export class WalletRPC {
         if (poolA.registration_height === poolB.registration_height) {
             return 0
         }
-        return poolA.registration_height < poolB.registration_height ? -1 : 1
+        return poolA.registration_height > poolB.registration_height ? -1 : 1
     }
 
     async checkHeight (func_name, height) {
