@@ -331,7 +331,6 @@ export default {
     },
     components: {
         tritonField,
-        path,
         fs
     }
 }

@@ -26,6 +26,7 @@ Promise.allSettled = Promise.allSettled || ((promises) => Promise.all(
 export class WalletRPC {
     constructor (backend) {
         this.isQuitting = false
+        this.tx_metadata_list = []
         this.walletRPCProcesses = []
         this.backend = backend
         this.data_dir = null
@@ -334,12 +335,15 @@ export class WalletRPC {
         case "stake":
             this.stake(params.password, params.amount, params.key, params.destination)
             break
-        case "stake_confirm":
-            this.confirmStake()
+        case "relay_stake":
+            this.relayStake()
             break
-        case "stake_cancel":
-            this.cancelStake()
-            break
+        // case "stake_confirm":
+        //     this.confirmStake()
+        //     break
+        // case "stake_cancel":
+        //     this.cancelStake()
+        //     break
         case "sweepAll":
             this.sweepAll(params.password, params.do_not_relay)
             break
@@ -899,12 +903,41 @@ export class WalletRPC {
         }
     }
 
-    confirmStake () {
-        this.confirmed_stake = true
-    }
+    // confirmStake () {
+    //     this.confirmed_stake = true
+    // }
 
-    cancelStake () {
-        this.cancel_stake = true
+    // cancelStake () {
+    //     this.cancel_stake = true
+    // }
+
+    relayStake() {
+        console.log('relayStake')
+        if (this.tx_metadata_list.length > 0) {
+            let stake = this.tx_metadata_list.pop()
+            this.sendRPC("relay_tx", { "hex": stake.tx_metadata }).then((data) => {
+                if (data.hasOwnProperty("error")) {
+                    let error = data.error.message.charAt(0).toUpperCase() + data.error.message.slice(1)
+                    this.sendGateway("set_tx_status", {
+                        code: -1,
+                        message: error,
+                        sending: false
+                    })
+                    return
+                }
+
+                this.sendGateway("show_notification", {
+                    type: "positive",
+                    message: `Staked ${(stake.amount / 1e4).toLocaleString()} XEQ to: ${stake.service_node_key}`,
+                    timeout: 2000
+                })
+
+                // this.sendGateway("set_tx_status", {
+                //     code: 0,
+                //     sending: false
+                // })
+            })
+        }
     }
 
     stake (password, amount, service_node_key, destination) {
@@ -953,49 +986,51 @@ export class WalletRPC {
                 if (data.result) {
                     let burn = (amount / 1e4) * 0.001
                     let fee = (data.result.fee / 1e4) - burn
+                    this.tx_metadata_list.push({tx_metadata: data.result.tx_metadata, amount, service_node_key})
                     this.sendGateway("set_tx_status", {
                         code: 0,
                         message: "Fee " + (fee).toLocaleString() + " | Burn: " + (burn).toLocaleString(),
                         sending: false
                     })
-                    while (!this.confirmed_stake) {
-                        await new Promise((resolve, reject) => setTimeout(resolve, 25))
-                        if (this.cancel_stake) {
-                            this.sendGateway("show_notification", {
-                                type: "negative",
-                                message: "User canceled tx",
-                                timeout: 2000
-                            })
-                            this.confirmed_stake = false
-                            this.cancel_stake = false
-                            return
-                        }
-                    }
-                    this.confirmed_stake = false
-                    this.cancel_stake = false
+                    // while (!this.confirmed_stake) {
+                    //     await new Promise((resolve, reject) => setTimeout(resolve, 25))
+                        
+                    //     if (this.cancel_stake) {
+                    //         this.sendGateway("show_notification", {
+                    //             type: "negative",
+                    //             message: "User canceled tx",
+                    //             timeout: 2000
+                    //         })
+                    //         this.confirmed_stake = false
+                    //         this.cancel_stake = false
+                    //         return
+                    //     }
+                    // }
+                    // this.confirmed_stake = false
+                    // this.cancel_stake = false
 
-                    this.sendRPC("relay_tx", { "hex": data.result.tx_metadata }).then((data_finalize) => {
-                        if (data.hasOwnProperty("error")) {
-                            let error = data.error.message.charAt(0).toUpperCase() + data.error.message.slice(1)
-                            this.sendGateway("set_tx_status", {
-                                code: -1,
-                                message: error,
-                                sending: false
-                            })
-                            return
-                        }
+                    // this.sendRPC("relay_tx", { "hex": data.result.tx_metadata }).then((data_finalize) => {
+                    //     if (data.hasOwnProperty("error")) {
+                    //         let error = data.error.message.charAt(0).toUpperCase() + data.error.message.slice(1)
+                    //         this.sendGateway("set_tx_status", {
+                    //             code: -1,
+                    //             message: error,
+                    //             sending: false
+                    //         })
+                    //         return
+                    //     }
 
-                        this.sendGateway("show_notification", {
-                            type: "positive",
-                            message: "Staked " + (amount / 1e4).toLocaleString() + " XEQ to: " + service_node_key,
-                            timeout: 2000
-                        })
+                    //     this.sendGateway("show_notification", {
+                    //         type: "positive",
+                    //         message: "Staked " + (amount / 1e4).toLocaleString() + " XEQ to: " + service_node_key,
+                    //         timeout: 2000
+                    //     })
 
-                        this.sendGateway("set_tx_status", {
-                            code: 0,
-                            sending: false
-                        })
-                    })
+                    //     // this.sendGateway("set_tx_status", {
+                    //     //     code: 0,
+                    //     //     sending: false
+                    //     // })
+                    // })
                 }
             })
         })

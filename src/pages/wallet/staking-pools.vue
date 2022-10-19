@@ -338,6 +338,7 @@ export default {
         tx_status: {
             handler (val, old) {
                 // if(val.code == old.code) return
+                console.log(val, old)
                 switch (this.tx_status.code) {
                 case 0:
                     this.$q.dialog({
@@ -354,9 +355,9 @@ export default {
                             color: "red"
                         }
                     }).then(() => {
-                        this.$gateway.send("wallet", "stake_confirm", {})
+                        this.$gateway.send("wallet", "relay_stake", {})
                     }).catch(() => {
-                        this.$gateway.send("wallet", "stake_cancel", {})
+                        // this.$gateway.send("wallet", "stake_cancel", {})
                     })
                     break
                 case -1:
