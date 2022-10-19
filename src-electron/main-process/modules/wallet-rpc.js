@@ -341,7 +341,7 @@ export class WalletRPC {
             this.cancelStake()
             break
         case "sweepAll":
-            this.sweepAll(params.password)
+            this.sweepAll(params.password, params.do_not_relay)
             break
 
         case "register_service_node":
@@ -1001,7 +1001,7 @@ export class WalletRPC {
         })
     }
 
-    sweepAll (password) {
+    sweepAll (password, do_not_relay = false) {
         console.log('sweepAll')
         crypto.pbkdf2(password, this.auth[2], 1000, 64, "sha512", (err, password_hash) => {
             if (err) {
@@ -1034,10 +1034,11 @@ export class WalletRPC {
 
                 const rpc_endpoint = sweep_all ? "sweep_all" : "transfer_split"
                 const params = {
-                    "address": my_address,
-                    "account_index": 0,
-                    "priority": 0,
-                    "ring_size": 15 // Always force a ring size of 10 (ringsize = mixin + 1)
+                    address: my_address,
+                    account_index: 0,
+                    priority: 0,
+                    ring_size: 15, // Always force a ring size of 10 (ringsize = mixin + 1)
+                    do_not_relay
                 }
 
                 this.sendRPC(rpc_endpoint, params).then((data) => {
@@ -1050,10 +1051,15 @@ export class WalletRPC {
                         })
                         return
                     }
+                    let message = "Sweep All Successfully sent"
+                    if (do_not_relay) {
+                        let totalFees = data.result.fee_list.reduce((sum, value) => sum + value, 0)
+                        message = `Sweep All Fee ${parseFloat(totalFees / 1e4).toFixed(4)}`
+                    }
 
                     this.sendGateway("set_tx_status", {
-                        code: 0,
-                        message: "Sweep All Successfully sent",
+                        code: sweep_all ? do_not_relay ? 99 : 100 : 0,
+                        message,
                         sending: false
                     })
 

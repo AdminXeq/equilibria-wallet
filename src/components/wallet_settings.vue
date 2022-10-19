@@ -253,6 +253,7 @@ export default {
         theme: state => state.gateway.app.config.appearance.theme,
         info: state => state.gateway.wallet.info,
         secret: state => state.gateway.wallet.secret,
+        tx_status: state => state.gateway.tx_status,
         wallet_data_dir: state => state.gateway.app.config.app.wallet_data_dir,
         is_ready (state) {
             return this.$store.getters["gateway/isReady"]
@@ -318,6 +319,39 @@ export default {
                 }
             },
             deep: true
+        },
+        tx_status: {
+            handler (val, old) {
+                switch (val.code) {
+                    case 99:
+                        this.$q.dialog({
+                            title: "Proceed with Sweep All?",
+                            message: val.message,
+                            ok: {
+                                label: "OK",
+                                color: "positive"
+                            },
+                            cancel: {
+                                flat: true,
+                                label: "CANCEL",
+                                color: "red"
+                            }
+                            }).then(() => {
+                                this.$gateway.send("wallet", "sweepAll", { password: this.password, do_not_relay: false })
+                            }).catch(error => {})
+                        break;
+                    case 100:
+                        this.$q.notify({
+                            type: "positive",
+                            timeout: 2000,
+                            message: val.message
+                        })
+                        break;
+                    default:
+                        break;
+                }
+                
+            }
         }
     },
     methods: {
@@ -434,7 +468,8 @@ export default {
                     color: "red"
                 }
             }).then(password => {
-                this.$gateway.send("wallet", "sweepAll", { password: password })
+                this.password = password
+                this.$gateway.send("wallet", "sweepAll", { password: password, do_not_relay: true })
             }).catch(() => {
             })
         },
