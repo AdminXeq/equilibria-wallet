@@ -337,8 +337,6 @@ export default {
         },
         tx_status: {
             handler (val, old) {
-                // if(val.code == old.code) return
-                console.log(val, old)
                 switch (this.tx_status.code) {
                 case 0:
                     this.$q.dialog({
