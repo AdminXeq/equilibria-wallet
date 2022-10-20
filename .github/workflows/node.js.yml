@@ -33,10 +33,10 @@ jobs:
                 npm prefix -g | % {npm config set node_gyp "$_\node_modules\node-gyp\bin\node-gyp.js"}
             - name: Install vs
               run: npm config set msvs_version 2019
-                
+
             - name: Install dependencies
               run: npm install -f
-              
+
             - name: Download Xeq binaries
               run: node ./build/download-binaries.js
 
@@ -72,12 +72,7 @@ jobs:
               if: runner.os == 'macOS'
               run: npm run build
               env:
-                GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                CSC_LINK: ${{ secrets.MAC_CERTIFICATE }}
-                CSC_KEY_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
-                ELECTRON_WALLET_APPLE_ID: ${{ secrets.ELECTRON_WALLET_APPLE_ID }}
-                ELECTRON_WALLET_PASSWORD: ${{ secrets.ELECTRON_WALLET_PASSWORD }}
-                ELECTRON_WALLET_TEAM_ID: ${{ secrets.ELECTRON_WALLET_TEAM_ID }}
+                GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}              
 
             - name: Remove un-needed artifacts
               run: rm -r -- ./*/
