@@ -24,7 +24,7 @@ jobs:
             - name: Install node
               uses: actions/setup-node@v1
               with:
-                node-version: "14.17.3"
+                node-version: "16.18.0"
             - name: patch node gyp on windows to support Visual Studio 2019
               if: matrix.os == 'windows-latest'
               shell: powershell
@@ -72,7 +72,7 @@ jobs:
               if: runner.os == 'macOS'
               run: npm run build
               env:
-                GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}              
+                GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Remove un-needed artifacts
               run: rm -r -- ./*/
