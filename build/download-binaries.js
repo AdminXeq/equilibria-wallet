@@ -17,7 +17,7 @@ async function download () {
                 if (platform === "darwin") {
                     return url.includes("macOS-cli-intel-release-13.2.0.zip")
                 } else if (platform === "win32") {
-                    return url.includes("win64")
+                    return url.includes("windows")
                 }
                 return url.includes("linux-x86_64-gnu-release-13.2.0.tar.gz")
             })
