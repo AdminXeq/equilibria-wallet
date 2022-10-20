@@ -15,7 +15,7 @@ async function download () {
             .map(asset => asset["browser_download_url"])
             .find(url => {
                 if (platform === "darwin") {
-                    return url.includes("macOS-cli-intel-release-13.2.0.zip")
+                    return url.includes("intel-release")
                 } else if (platform === "win32") {
                     return url.includes("windows")
                 }
