@@ -1,0 +1,91 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: Node.js CI
+
+on:
+  push:
+    branches: [ "development" ]
+  pull_request:
+    branches: [ "development" ]
+
+jobs:
+    build:
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+              os: [windows-2019, macos-latest, ubuntu-latest]
+
+        steps:
+            - name: Checkout git repo
+              uses: actions/checkout@v1
+
+            - name: Install node
+              uses: actions/setup-node@v1
+              with:
+                node-version: "14.17.3"
+            - name: patch node gyp on windows to support Visual Studio 2019
+              if: matrix.os == 'windows-latest'
+              shell: powershell
+              run: |
+                npm install --global node-gyp@latest
+                npm prefix -g | % {npm config set node_gyp "$_\node_modules\node-gyp\bin\node-gyp.js"}
+            - name: Install vs
+              run: npm config set msvs_version 2019
+                
+            - name: Install dependencies
+              run: npm install -f
+              
+            - name: Download Xeq binaries
+              run: node ./build/download-binaries.js
+
+            - name: Extract gz binaries
+              if: runner.os == 'Linux'
+              run: tar -xf latest.gz
+              shell: bash
+              working-directory: ./downloads
+
+            - name: Extract zip binaries
+              if: runner.os != 'Linux'
+              run: unzip latest.zip
+              shell: bash
+              working-directory: ./downloads
+
+            - name: Move xeq binaries
+              run: |
+                find ./downloads -type f -name "daemon*" -exec cp '{}' ./bin \;
+                find ./downloads -type f -name "wallet-rpc*" -exec cp '{}' ./bin \;
+              shell: bash
+
+            - name: Verify binaries
+              run: ls ./bin
+              shell: bash
+
+            - name: Publish window and linux binaries
+              if: runner.os != 'macOS'
+              run: npm run build
+              env:
+                GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Publish mac binaries
+              if: runner.os == 'macOS'
+              run: npm run build
+              env:
+                GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                CSC_LINK: ${{ secrets.MAC_CERTIFICATE }}
+                CSC_KEY_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
+                ELECTRON_WALLET_APPLE_ID: ${{ secrets.ELECTRON_WALLET_APPLE_ID }}
+                ELECTRON_WALLET_PASSWORD: ${{ secrets.ELECTRON_WALLET_PASSWORD }}
+                ELECTRON_WALLET_TEAM_ID: ${{ secrets.ELECTRON_WALLET_TEAM_ID }}
+
+            - name: Remove un-needed artifacts
+              run: rm -r -- ./*/
+              shell: bash
+              working-directory: ./dist/electron-mat/Packaged
+
+            - name: Upload artifacts
+              uses: actions/upload-artifact@v1
+              with:
+                name: ${{ runner.OS }}
+                path: dist/electron-mat/Packaged
