@@ -18,7 +18,7 @@ Please submit any changes as pull requests to the development branch, all change
 
 #### Commands
 ```
-nvm use 16.18.0
+nvm use 14.27.3
 npm install -g quasar-cli
 git clone https://github.com/EquilibriaCC/equilibria-wallet -b development
 cd equilibria-wallet
@@ -32,12 +32,12 @@ pip3 install ds-store (macOS)
 //build options
 npm run build
 
-//additional build options
+"build": "quasar build -m electron -t mat",
 "build-mac-x64": "quasar build -m electron -t mat --mac --x64",
 "build-mac-arm64": "quasar build -m electron -t mat --mac --arm64",
-"build-windows": "quasar build -m electron -t mat --windows",
-"build-armv7": "quasar build -m electron -t mat --l --armv7l",
-"build-armv8": "quasar build -m electron -t mat --l --arm64",
+"build-windows": "quasar build -m electron -t mat --win",
+"build-armv7": "quasar build -m electron -t mat --linux --armv7l",
+"build-armv8": "quasar build -m electron -t mat --linux --arm64",
 
 //dev
 quasar dev -m electron -t mat
