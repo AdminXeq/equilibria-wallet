@@ -181,7 +181,7 @@ module.exports = function (ctx) {
                 // directories: {
                 //     buildResources: "src-electron/build"
                 // },
-                artifactName: "equilibira-wallet-${version}-${os}.${ext}",
+                artifactName: "equilibira-wallet-${version}-${os}-${arch}-${platform}.${ext}",
                 publish: "github",
 
                 linux: {
