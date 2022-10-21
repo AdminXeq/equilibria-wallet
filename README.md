@@ -18,28 +18,42 @@ Please submit any changes as pull requests to the development branch, all change
 
 #### Commands
 ```
-nvm use 14.27.3
-npm install -g quasar-cli
+nvm install v16.18.0
+npm i -g npm@latest
+npm i -g quasar-cli
 git clone https://github.com/EquilibriaCC/equilibria-wallet -b development
-cd equilibria-wallet
+cd equilibria-wallet && mkdir -p bin
 cp path_to_equilibria_binaries/daemon bin/
 cp path_to_equilibria_binaries/equilibria-wallet-rpc bin/
+```
+##### macOS specific only
+```
+brew install perl
+python -m pip install ds-store
 npm install
+npm run build-mac-x64 (for x86_64 mac) / npm run build-mac-arm64 (for Apple Silicon M1 and M2 mac)
+```
 
-brew install perl (macOS)
-pip3 install ds-store (macOS)
+##### ARMv7 specific linux build options
+```
+npm install --arch=armv7l
+npm run --arch=armv7l build-armv7
+```
 
-//build options
+##### ARMv8 / aarch64 / ARM64 specific linux build options
+```
+npm install --arch=arm64
+npm run --arch=arm64 build-armv8
+```
+
+##### Other platforms build options
+```
+npm install
 npm run build
+```
 
-"build": "quasar build -m electron -t mat",
-"build-mac-x64": "quasar build -m electron -t mat --mac --x64",
-"build-mac-arm64": "quasar build -m electron -t mat --mac --arm64",
-"build-windows": "quasar build -m electron -t mat --win",
-"build-armv7": "quasar build -m electron -t mat --linux --armv7l",
-"build-armv8": "quasar build -m electron -t mat --linux --arm64",
-
-//dev
-quasar dev -m electron -t mat
-
+##### Development build
+```
+npm install
+npm run dev
 ```

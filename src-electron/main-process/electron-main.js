@@ -7,7 +7,6 @@ const portscanner = require("portscanner")
 const windowStateKeeper = require("electron-window-state")
 const fs = require("fs")
 const path = require("upath")
-const os = require("os")
 
 /**
  * Set `__statics` path to static files in production;
@@ -58,7 +57,11 @@ function createWindow () {
         height: mainWindowState.height,
         minWidth: 640,
         minHeight: 480,
-        icon: require("path").join(__statics, "icon_512x512.png")
+        icon: require("path").join(__statics, "icon_512x512.png"),
+        webPreferences: {
+          nodeIntegration: true,
+          contextIsolation: false
+        }
     })
 
     mainWindow.on("close", (e) => {
@@ -110,25 +113,6 @@ function createWindow () {
                 port: port,
                 token: buffer.toString("hex")
             }
-
-            let config_dir = ""
-            if (os.platform() === "win32") {
-                config_dir = "C:\\ProgramData\\equilibria"
-            } else {
-                config_dir = path.join(os.homedir(), ".equilibria")
-            }
-
-            if (!fs.existsSync(config_dir)) {
-                fs.mkdirSync(config_dir, { recursive: true })
-            }
-
-            if (!fs.existsSync(path.join(config_dir, "gui"))) {
-                fs.mkdirSync(path.join(config_dir, "gui"), { recursive: true })
-            }
-
-            fs.writeFile(path.join(config_dir, "gui", "port.json"), JSON.stringify({ port: port }), "utf8", () => {
-
-            })
 
             portscanner.checkPortStatus(config.port, "127.0.0.1", (error, status) => {
                 if (status === "closed") {
