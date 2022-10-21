@@ -288,9 +288,9 @@ export default {
     watch: {
         tx_status: {
             handler (val, old) {
-                if (val.code === old.code) return
+                // if (val.code === old.code) return
                 switch (this.tx_status.code) {
-                case 0:
+                case 200:
                     this.$q.dialog({
                         title: "Confirm Fee",
                         message: this.tx_status.message,
@@ -305,13 +305,13 @@ export default {
                             color: "red"
                         }
                     }).then(() => {
-                        this.$gateway.send("wallet", "stake_confirm", {})
+                        this.$gateway.send("wallet", "relay_transfer", {})
                     }).catch(() => {
-                        this.$gateway.send("wallet", "stake_cancel", {})
+                        // this.$gateway.send("wallet", "stake_cancel", {})
                     })
 
                     break
-                case 1:
+                case 201:
                     this.$q.notify({
                         type: "positive",
                         timeout: 1000,
@@ -331,7 +331,7 @@ export default {
                         note: ""
                     }
                     break
-                case -1:
+                case -200:
                     this.$q.notify({
                         type: "negative",
                         timeout: 1000,
@@ -515,11 +515,6 @@ export default {
 
                 }
             }).then(password => {
-                this.$store.commit("gateway/set_tx_status", {
-                    code: 1,
-                    message: "Sending transaction",
-                    sending: true
-                })
                 const newTx = objectAssignDeep.noMutate(this.newTx, { password })
                 this.$gateway.send("wallet", "transfer", newTx)
             }).catch(() => {

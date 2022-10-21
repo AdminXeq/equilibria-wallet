@@ -335,15 +335,11 @@ export class WalletRPC {
         case "stake":
             this.stake(params.password, params.amount, params.key, params.destination)
             break
+
         case "relay_stake":
             this.relayStake()
             break
-        // case "stake_confirm":
-        //     this.confirmStake()
-        //     break
-        // case "stake_cancel":
-        //     this.cancelStake()
-        //     break
+
         case "sweepAll":
             this.sweepAll(params.password, params.do_not_relay)
             break
@@ -358,6 +354,10 @@ export class WalletRPC {
 
         case "transfer":
             this.transfer(params.password, params.amount, params.address, params.payment_id, params.priority, params.currency, params.note || "", params.address_book, params.memo || "", params.network || 0)
+            break
+
+        case "relay_transfer":
+            this.relayTransfer()
             break
 
         case "swap":
@@ -903,14 +903,6 @@ export class WalletRPC {
         }
     }
 
-    // confirmStake () {
-    //     this.confirmed_stake = true
-    // }
-
-    // cancelStake () {
-    //     this.cancel_stake = true
-    // }
-
     relayStake() {
         console.log('relayStake')
         if (this.tx_metadata_list.length > 0) {
@@ -919,7 +911,7 @@ export class WalletRPC {
                 if (data.hasOwnProperty("error")) {
                     let error = data.error.message.charAt(0).toUpperCase() + data.error.message.slice(1)
                     this.sendGateway("set_tx_status", {
-                        code: -1,
+                        code: -300,
                         message: error,
                         sending: false
                     })
@@ -931,11 +923,6 @@ export class WalletRPC {
                     message: `Staked ${(stake.amount / 1e4).toLocaleString()} XEQ to: ${stake.service_node_key}`,
                     timeout: 2000
                 })
-
-                // this.sendGateway("set_tx_status", {
-                //     code: 0,
-                //     sending: false
-                // })
             })
         }
     }
@@ -976,7 +963,7 @@ export class WalletRPC {
                         timeout: 2000
                     })
                     this.sendGateway("set_tx_status", {
-                        code: -1,
+                        code: -300,
                         message: error,
                         sending: false
                     })
@@ -988,49 +975,10 @@ export class WalletRPC {
                     let fee = (data.result.fee / 1e4) - burn
                     this.tx_metadata_list.push({tx_metadata: data.result.tx_metadata, amount, service_node_key})
                     this.sendGateway("set_tx_status", {
-                        code: 0,
+                        code: 300,
                         message: "Fee " + (fee).toLocaleString() + " | Burn: " + (burn).toLocaleString(),
                         sending: false
                     })
-                    // while (!this.confirmed_stake) {
-                    //     await new Promise((resolve, reject) => setTimeout(resolve, 25))
-                        
-                    //     if (this.cancel_stake) {
-                    //         this.sendGateway("show_notification", {
-                    //             type: "negative",
-                    //             message: "User canceled tx",
-                    //             timeout: 2000
-                    //         })
-                    //         this.confirmed_stake = false
-                    //         this.cancel_stake = false
-                    //         return
-                    //     }
-                    // }
-                    // this.confirmed_stake = false
-                    // this.cancel_stake = false
-
-                    // this.sendRPC("relay_tx", { "hex": data.result.tx_metadata }).then((data_finalize) => {
-                    //     if (data.hasOwnProperty("error")) {
-                    //         let error = data.error.message.charAt(0).toUpperCase() + data.error.message.slice(1)
-                    //         this.sendGateway("set_tx_status", {
-                    //             code: -1,
-                    //             message: error,
-                    //             sending: false
-                    //         })
-                    //         return
-                    //     }
-
-                    //     this.sendGateway("show_notification", {
-                    //         type: "positive",
-                    //         message: "Staked " + (amount / 1e4).toLocaleString() + " XEQ to: " + service_node_key,
-                    //         timeout: 2000
-                    //     })
-
-                    //     // this.sendGateway("set_tx_status", {
-                    //     //     code: 0,
-                    //     //     sending: false
-                    //     // })
-                    // })
                 }
             })
         })
@@ -1110,12 +1058,38 @@ export class WalletRPC {
         })
     }
 
+    async relayTransfer() {
+        console.log('relayTransfer')
+        if (this.tx_metadata_list.length > 0) {
+            let transfer = this.tx_metadata_list.pop()
+
+            let data = await this.sendRPC("relay_tx", { "hex": transfer.tx_metadata })
+            if (data.hasOwnProperty("error")) {
+                let error = data.error.message.charAt(0).toUpperCase() + data.error.message.slice(1)
+                this.sendGateway("set_tx_status", {
+                    code: -200,
+                    message: error,
+                    sending: false
+                })
+                return
+            }
+
+            this.sendGateway("set_tx_status", {
+                code: 201,
+                message: "Transaction successfully sent",
+                sending: false
+            })
+
+            if (data.result.tx_hash) { this.saveTxNotes(data.result.tx_hash, transfer.note) }
+        }
+    }
+
     transfer (password, amount, address, payment_id, priority, currency, note, address_book = {}, memo, network) {
         console.log('transfer')
-        crypto.pbkdf2(password, this.auth[2], 1000, 64, "sha512", (err, password_hash) => {
+        crypto.pbkdf2(password, this.auth[2], 1000, 64, "sha512", async (err, password_hash) => {
             if (err) {
                 this.sendGateway("set_tx_status", {
-                    code: -1,
+                    code: -200,
                     message: "Internal error",
                     sending: false
                 })
@@ -1123,7 +1097,7 @@ export class WalletRPC {
             }
             if (!this.isValidPasswordHash(password_hash)) {
                 this.sendGateway("set_tx_status", {
-                    code: -1,
+                    code: -200,
                     message: "Invalid password",
                     sending: false
                 })
@@ -1164,61 +1138,25 @@ export class WalletRPC {
             params.do_not_relay = true
             params.get_tx_metadata = true
 
-            this.sendRPC(rpc_endpoint, params).then(async (data) => {
-                if (data.hasOwnProperty("error")) {
-                    let error = data.error.message.charAt(0).toUpperCase() + data.error.message.slice(1)
-                    this.sendGateway("set_tx_status", {
-                        code: -1,
-                        message: error,
-                        sending: false
-                    })
-                    return
-                }
+            let data = await this.sendRPC(rpc_endpoint, params)
+            if (data.hasOwnProperty("error")) {
+                let error = data.error.message.charAt(0).toUpperCase() + data.error.message.slice(1)
+                this.sendGateway("set_tx_status", {
+                    code: -200,
+                    message: error,
+                    sending: false
+                })
+                return
+            }
 
-                if (data.result) {
-                    this.sendGateway("set_tx_status", {
-                        code: 0,
-                        message: "Fee " + (data.result.fee_list[0] / 1e4).toLocaleString(),
-                        sending: false
-                    })
-
-                    while (!this.confirmed_stake) {
-                        await new Promise((resolve, reject) => setTimeout(resolve, 25))
-                        if (this.cancel_stake) {
-                            this.sendGateway("show_notification", {
-                                type: "negative",
-                                message: "User canceled tx",
-                                timeout: 2000
-                            })
-                            this.confirmed_stake = false
-                            this.cancel_stake = false
-                            return
-                        }
-                    }
-                    this.confirmed_stake = false
-                    this.cancel_stake = false
-
-                    this.sendRPC("relay_tx", { "hex": data.result.tx_metadata_list[0] }).then((data_finalize) => {
-                        if (data.hasOwnProperty("error")) {
-                            let error = data.error.message.charAt(0).toUpperCase() + data.error.message.slice(1)
-                            this.sendGateway("set_tx_status", {
-                                code: -1,
-                                message: error,
-                                sending: false
-                            })
-                            return
-                        }
-
-                        this.sendGateway("set_tx_status", {
-                            code: 1,
-                            message: "Transaction successfully sent",
-                            sending: false
-                        })
-
-                        if (data_finalize.result.tx_hash) { this.saveTxNotes(data_finalize.result.tx_hash, note) }
-                    })
-                }
-            })
+            if (data.result) {
+                this.tx_metadata_list.push({tx_metadata: data.result.tx_metadata_list[0], amount, note})
+                this.sendGateway("set_tx_status", {
+                    code: 200,
+                    message: "Fee " + (data.result.fee_list[0] / 1e4).toLocaleString(),
+                    sending: false
+                })
+            }
 
             if (address_book.hasOwnProperty("save") && address_book.save) {
                 this.addAddressBook(address, payment_id, address_book.description, address_book.name)

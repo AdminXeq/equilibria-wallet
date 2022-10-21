@@ -338,7 +338,7 @@ export default {
         tx_status: {
             handler (val, old) {
                 switch (this.tx_status.code) {
-                case 0:
+                case 300:
                     this.$q.dialog({
                         title: "Confirm Fee",
                         message: this.tx_status.message,
@@ -358,7 +358,7 @@ export default {
                         // this.$gateway.send("wallet", "stake_cancel", {})
                     })
                     break
-                case -1:
+                case -300:
 
                     break
                 }
@@ -469,7 +469,7 @@ export default {
                 }
             }).then(password => {
                 this.$store.commit("gateway/set_tx_status", {
-                    code: 1,
+                    code: 300,
                     message: "Sending transaction",
                     sending: true
                 })
