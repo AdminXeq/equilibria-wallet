@@ -1,36 +1,26 @@
 <template>
-<div>
-    <q-btn class="menu" icon="menu" size="lg" flat style="margin: 10px; right: 0px">
-        <q-popover>
-            <q-list separator link>
-                <q-item v-close-overlay @click.native="switchWallet" v-if="!disableSwitchWallet">
-                    <q-item-main>
-                        <q-item-tile label>Switch Account</q-item-tile>
-                    </q-item-main>
-                </q-item>
-                <q-item v-close-overlay @click.native="openSettings">
-                    <q-item-main>
-                        <q-item-tile label>Daemon Settings</q-item-tile>
-                    </q-item-main>
-                </q-item>
-                <q-item v-close-overlay @click.native="showAbout(true)">
-                    <q-item-main>
-                        <q-item-tile label>About</q-item-tile>
-                    </q-item-main>
-                </q-item>
-                <q-item v-close-overlay @click.native="exit">
-                    <q-item-main>
-                        <q-item-tile label>Exit Equilibria Wallet</q-item-tile>
-                    </q-item-main>
-                </q-item>
-            </q-list>
-        </q-popover>
-
+  <div>
+    <q-btn class="menu" icon="menu" size="lg" flat>
+      <q-menu>
+        <q-list separator class="menu-list">
+          <q-item v-if="!disableSwitchWallet" v-close-popup clickable @click.native="switchWallet">
+            <q-item-label header>Switch Account</q-item-label>
+          </q-item>
+          <q-item v-close-popup clickable @click.native="openSettings">
+            <q-item-label header>Daemon Settings</q-item-label>
+          </q-item>
+          <q-item v-close-popup clickable @click.native="showAbout(true)">
+            <q-item-label header>About</q-item-label>
+          </q-item>
+          <q-item v-close-popup clickable @click.native="exit">
+            <q-item-label header>Exit Equilibria Wallet</q-item-label>
+          </q-item>
+        </q-list>
+      </q-menu>
     </q-btn>
     <settings-modal ref="settingsModal" />
-    <q-modal minimized ref="aboutModal">
+    <q-dialog ref="aboutModal" minimized>
         <div class="about-modal">
-
             <img class="q-mb-md" src="xeq_logo_with_padding.png" />
 
             <p class="q-my-sm">Version: v{{version}}-v{{daemonVersion}}</p>
@@ -56,7 +46,7 @@
                 label="Close"
                 />
         </div>
-    </q-modal>
+    </q-dialog>
 </div>
 </template>
 
@@ -139,8 +129,9 @@ export default {
 
 <style lang="scss">
 .about-modal {
-
     padding: 25px;
+    background-color: $dark;
+    color: navy;
 
     .external-links {
 

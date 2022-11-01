@@ -7,40 +7,39 @@
 
     <template v-if="address_book_combined.length">
         <q-list link no-border :dark="theme=='dark'" class="triton-list">
-            <q-item class="triton-list-item" v-for="(entry, index) in address_book_combined" @click.native="details(entry)" :key="index">
-                <q-item-main>
-                    <q-item-tile class="ellipsis" label>{{ entry.address }}</q-item-tile>
-                    <q-item-tile sublabel>{{ entry.name }}</q-item-tile>
-                </q-item-main>
-                <q-item-side>
+            <q-item class="triton-list-item" :key="`${entry.address}-${entry.name}-${entry.payment_id}`" v-for="entry in address_book_combined" @click.native="details(entry)">
+                <q-item-section>
+                    <q-item-label class="ellipsis">{{ entry.address }}</q-item-label>
+                    <q-item-label class="non-selectable" caption>{{ entry.name }}</q-item-label>
+                </q-item-section>
+                <q-item-section side>
+                  <q-item-label>
                     <q-icon size="24px" :name="entry.starred ? 'star' : 'star_border'" />
                     <q-btn
                         color="secondary"
                         style="margin-left: 10px;"
-                        label="Send"
+                        :label="Send"
                         :disabled="view_only"
                         @click="sendToAddress(entry, $event)"
                     />
-                </q-item-side>
+                  </q-item-label>
+                </q-item-section>
 
-                <q-context-menu>
-                    <q-list link separator style="min-width: 150px; max-height: 300px;">
-                        <q-item v-close-overlay
-                                @click.native="details(entry)">
-                            <q-item-main label="Show details" />
+                <q-menu context-menu>
+                    <q-list class="context-menu">
+                        <q-item v-close-popup clickable @click.native="details(entry)">
+                            <q-item-section>Show details</q-item-section>
                         </q-item>
 
-                        <q-item v-close-overlay
-                                @click.native="sendToAddress(entry, $event)">
-                            <q-item-main label="Send to this address" />
+                        <q-item v-close-popup clickable @click.native="sendToAddress(entry, $event)">
+                            <q-item-section>Send to this address</q-item-section>
                         </q-item>
 
-                        <q-item v-close-overlay
-                                @click.native="copyAddress(entry, $event)">
-                            <q-item-main label="Copy address" />
+                        <q-item v-close-popup clickable @click.native="copyAddress(entry, $event)">
+                            <q-item-section>Copy address</q-item-section>
                         </q-item>
                     </q-list>
-                </q-context-menu>
+                </q-menu>
 
             </q-item>
         </q-list>
@@ -122,15 +121,11 @@ export default {
                     ok: {
                         label: "OK",
                         color: "positive"
-
                     }
-                }).then(password => {
-                    this.$q.notify({
-                        type: "positive",
-                        timeout: 1000,
-                        message: "Address copied to clipboard"
-                    })
-                }).catch(() => {
+                })
+                .onDismiss(() => null)
+                .onCancel(() => null)
+                .onOk(() => {
                     this.$q.notify({
                         type: "positive",
                         timeout: 1000,
@@ -174,7 +169,7 @@ export default {
             font-weight: 400;
         }
 
-        .q-item-side {
+        .q-item-section {
             display: flex;
             justify-content: center;
             align-items: center;

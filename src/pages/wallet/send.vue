@@ -55,30 +55,32 @@
 
             <!-- amount in xeq-->
             <div class="row gutter-md">
-              <div class="col-6">
+              <div class="col-6 amount">
                   <tritonField label="Amount" :error="$v.newTx.amount.$error">
                       <q-input v-model="newTx.amount"
-                          :dark="theme=='dark'"
+                          :dark="theme == 'dark'"
                           type="number"
                           min="0"
                           :max="unlocked_balance / 1e4"
                           placeholder="0"
                           @blur="$v.newTx.amount.$touch"
-                          hide-underline
+                          borderless
+                          dense
                           @change.native="conversionFromXtri()"
                       />
-                      <q-btn color="secondary" @click="newTx.amount = unlocked_balance / 1e4; conversionFromXtri()" :text-color="theme=='dark'?'white':'dark'">All</q-btn>
+                      <q-btn color="secondary" @click="newTx.amount = unlocked_balance / 1e4; conversionFromXtri()" :text-color="theme == 'dark' ? 'white' : 'dark'">All</q-btn>
                   </tritonField>
               </div>
                 <div class="col-6">
                     <tritonField label="Address" :error="$v.newTx.address.$error">
-                        <q-input v-model="newTx.address"
-                                 :dark="theme=='dark'"
+                        <q-input v-model.trim="newTx.address"
+                                 :dark="theme == 'dark'"
                                  @blur="$v.newTx.address.$touch"
                                  :placeholder="address_placeholder"
-                                 hide-underline
+                                 borderless
+                                 dense
                         />
-                        <q-btn color="secondary" :text-color="theme=='dark'?'white':'dark'" to="addressbook">Contacts</q-btn>
+                        <q-btn color="secondary" :text-color="theme == 'dark' ? 'white' : 'dark'" to="addressbook">Contacts</q-btn>
                     </tritonField>
 
                 </div>
@@ -100,7 +102,7 @@
             <!-- Payment ID -->
 <!--            <div class="col q-mt-sm">-->
 <!--                <tritonField label="Payment id" :error="$v.newTx.payment_id.$error" optional>-->
-<!--                     <q-input v-model="newTx.payment_id"-->
+<!--                     <q-input v-model.trim="newTx.payment_id"-->
 <!--                        :dark="theme=='dark'"-->
 <!--                        @blur="$v.newTx.payment_id.$touch"-->
 <!--                        placeholder="16 or 64 hexadecimal characters"-->
@@ -113,70 +115,73 @@
             <div class="col q-mt-sm">
                 <tritonField label="Notes" optional>
                      <q-input v-model="newTx.note"
+                        class="full-width text-area-triton"
                         type="textarea"
-                        :dark="theme=='dark'"
+                        :dark="theme == 'dark'"
                         placeholder="Additional notes to attach to the transaction"
-                        hide-underline
+                        borderless
+                        dense
                     />
                 </tritonField>
             </div>
 
             <!-- Save to address book -->
-            <q-field>
-                <q-checkbox v-model="newTx.address_book.save" label="Save to address book" :dark="theme=='dark'" />
-            </q-field>
+            <q-checkbox v-model="newTx.address_book.save" label="Save to address book" :dark="theme == 'dark'" color="dark" />
 
             <div v-if="newTx.address_book.save">
                 <tritonField label="Name" optional>
                      <q-input v-model="newTx.address_book.name"
-                        :dark="theme=='dark'"
+                        :dark="theme == 'dark'"
                         placeholder="Name that belongs to this address"
-                        hide-underline
+                        borderless
+                        dense
                     />
                 </tritonField>
                 <tritonField class="q-mt-sm" label="Notes" optional>
                      <q-input v-model="newTx.address_book.description"
                         type="textarea"
                         rows="2"
-                        :dark="theme=='dark'"
+                        :dark="theme == 'dark'"
                         placeholder="Additional notes"
-                        hide-underline
+                        borderless
+                        dense
                     />
                 </tritonField>
             </div>
 
-            <q-field class="q-pt-sm">
+            <div>
                 <q-btn
                     class="send-btn"
                     :disable="!is_able_to_send"
-                    color="positive" @click="openedSend = true" label="Send" />
-            </q-field>
+                    color="primary" label="Send" @click="send()" />
+            </div>
 
         </div>
 
-        <q-inner-loading :visible="tx_status.sending" :dark="theme=='dark'">
-            <q-spinner color="primary" :size="30" />
+        <q-inner-loading :showing="tx_status.sending" :dark="theme == 'dark'">
+            <q-spinner color="primary" size="30" />
         </q-inner-loading>
 
          <q-modal v-model="openedSend" minimized content-css="padding: 0 2rem 2rem 2rem" class="confirmBtn">
             <h5>CONFIRM AMOUNT</h5>
             <tritonField :error="$v.newTx.amount.$error">
                       <q-input v-model="newTx.amount"
-                          :dark="theme=='dark'"
+                          :dark="theme == 'dark'"
                           type="number"
                           min="0"
                           :max="unlocked_balance / 1e4"
                           placeholder="0"
                           @blur="$v.newTx.amount.$touch"
-                          hide-underline
+                          borderless
+                          dense
                           suffix="xeq"
                       />
 
                   </tritonField>
             <q-btn class="sendBtn"
-            color="positive"
-            @click="openedSend = false, send()"
-            label="Confirm"
+              color="positive"
+              @click="send()"
+              label="Confirm"
             />
         </q-modal>
 
@@ -222,7 +227,7 @@ export default {
                 amount: 0,
                 address: "",
                 payment_id: "",
-                priority: 0,
+                priority: priorityOptions[0],
                 currency: 0,
                 address_book: {
                     save: false,
@@ -304,11 +309,12 @@ export default {
                             label: "CANCEL",
                             color: "red"
                         }
-                    }).then(() => {
-                        this.$gateway.send("wallet", "relay_transfer", {})
-                    }).catch(() => {
-                        // this.$gateway.send("wallet", "stake_cancel", {})
                     })
+                    .onOk(() => {
+                        this.$gateway.send("wallet", "relay_transfer", {})
+                    })
+                    .onDismiss(() => {})
+                    .onCancel(() => {})
 
                     break
                 case 201:
@@ -455,7 +461,7 @@ export default {
             return 1
         },
 
-        send: function () {
+        async send () {
             this.$v.newTx.$touch()
 
             if (this.newTx.amount < 0) {
@@ -506,19 +512,24 @@ export default {
                 return
             }
 
-            this.showPasswordConfirmation({
+            let passwordDialog = await this.showPasswordConfirmation({
                 title: "Transfer",
                 noPasswordMessage: "Do you want to send the transaction? The fee will be shown on the next page before relaying the transaction.",
                 ok: {
                     label: "Check Fee",
-                    color: "positive"
-
-                }
-            }).then(password => {
+                    color: "primary"
+                },
+                dark: this.theme == "dark",
+                color: this.theme == "dark" ? "white" : "dark"
+            });
+            passwordDialog
+              .onOk(password => {
+                password = password || "";
                 const newTx = objectAssignDeep.noMutate(this.newTx, { password })
                 this.$gateway.send("wallet", "transfer", newTx)
-            }).catch(() => {
             })
+            .onDismiss(() => {})
+            .onCancel(() => {});
         }
     },
     mixins: [WalletPassword],
@@ -534,8 +545,17 @@ export default {
 .send {
     text-align: center;
     .send-btn {
+        margin-top: 6px;
         width: 200px;
     }
+}
+
+.amount {
+  padding-right: 10px;
+}
+
+.priority {
+  padding-left: 10px;
 }
 
 .confirmBtn {

@@ -1,23 +1,27 @@
 <template>
-<div class="column wallet-info">
-    <div style="border-bottom: 1px solid white;"/>
-    <div class="wallet-content">
-        <div class="row justify-center">
-            <div class="funds column items-center">
-                <div class="balance">
-                    <div v-if="price != 0" class="value">$<span><Formattriton :amount="info.balance * price" /></span></div>
-                    <div v-else class="value"><span><Formattriton :amount="info.balance" /> XEQ</span></div>
-                </div>
-                <div v-if="price != 0" class="row unlocked">
-                    <span><Formattriton :amount="info.balance" /> XEQ</span>
-                </div>
-                <div v-if="info.balance != info.unlocked_balance" class="row unlocked">
-                    <span>Unlocked: <Formattriton :amount="info.unlocked_balance" /> XEQ</span>
-                </div>
-            </div>
-        </div>
+  <div class="column wallet-info">
+    <div class="row justify-between items-center wallet-header triton-green">
+      <div class="title">{{ info.name }}</div>
+      <WalletSettings />
     </div>
-</div>
+    <div class="wallet-content">
+      <div class="row justify-center">
+        <div class="funds column items-center">  
+          <div class="balance">
+            <div class="text"><span>Balance</span></div>
+            <div v-if="price != 0" class="value">$<span><Formattriton :amount="info.balance * price" /></span></div>
+            <div v-else class="value"><span><Formattriton :amount="info.balance" /> XEQ</span></div>
+          </div>
+          <div v-if="price != 0" class="row unlocked"><span><Formattriton :amount="info.balance" /> XEQ</span></div>
+          <div v-if="info.balance != info.unlocked_balance" class="row unlocked"><span>Unlocked: <Formattriton :amount="info.unlocked_balance" /> XEQ</span></div>
+        </div>
+      </div>
+      <div class="wallet-address row justify-center items-center">
+        <div class="address">{{ info.address }}</div>
+        <CopyIcon :content="info.address" />
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>

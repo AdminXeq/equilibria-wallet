@@ -1,35 +1,27 @@
 <template>
-    <q-layout view="hHh Lpr lFf">
-        <q-layout-header class="shift-title">
+  <q-layout view="hHh Lpr lFf">
+    <q-header>
+      <q-toolbar>
+        <template v-if="show_menu">
+          <MainMenu :disable-switch-wallet="true" />
+        </template>
+        <template v-else>
+          <q-btn class="cancel" icon="reply" flat round dense @click="cancel()" />
+        </template>
+        <q-toolbar-title v-if="page_title == 'Equilibria'" class="flex items-center justify-center">
+          <img src="xeq_logo_with_padding.png" height="60" />
+        </q-toolbar-title>
+        <q-toolbar-title v-else class="flex items-center justify-center">{{ page_title }}</q-toolbar-title>
+      </q-toolbar>
+    </q-header>
 
-            <template v-if="show_menu">
-                <main-menu :disable-switch-wallet="true"/>
-            </template>
-            <template v-else>
-                <q-btn class="cancel" icon="reply"
-                       flat round dense
-                       @click="cancel()"/>
-            </template>
+    <q-page-container>
+      <router-view ref="page"/>
+    </q-page-container>
 
-            <template>
-                <q-toolbar-title>
-                    <div class="flex items-center justify-center" style="margin-top:12px">
-                        <div style="padding-left: auto; padding-right: auto; padding-top: auto; padding-bottom: auto;">
-                            <img src="statics/xeq_logo_with_padding.png" height="60">
-                        </div>
-                    </div>
-                </q-toolbar-title>
-            </template>
+    <StatusFooter/>
 
-        </q-layout-header>
-
-        <q-page-container>
-            <router-view ref="page"/>
-        </q-page-container>
-
-        <status-footer/>
-
-    </q-layout>
+  </q-layout>
 </template>
 
 <script>
@@ -40,6 +32,11 @@ import StatusFooter from "components/footer"
 import MainMenu from "components/mainmenu"
 
 export default {
+    components: {
+        StatusFooter,
+        MainMenu,
+        SettingsModal
+    },
     data () {
         return {}
     },
@@ -81,10 +78,6 @@ export default {
             }, 250)
         }
     },
-    components: {
-        StatusFooter,
-        MainMenu
-    }
 }
 </script>
 

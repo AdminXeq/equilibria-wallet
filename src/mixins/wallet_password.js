@@ -15,24 +15,33 @@ export default {
             })
         },
 
-        showPasswordConfirmation (options) {
+        async showPasswordConfirmation (options) {
             const { noPasswordMessage, ...other } = options
-
             return this.hasPassword().then(hasPassword => {
-                return this.$q.dialog({
+                const sharedOpts = {
                     cancel: {
                         flat: true,
                         label: "CANCEL",
                         color: "red"
                     },
-                    ...other,
-                    message: hasPassword ? "Enter wallet password to continue." : noPasswordMessage,
-                    prompt: hasPassword ? {
+                    ...other
+                };
+                const hasPasswordOpts = {
+                    ...sharedOpts,
+                    message: "Enter wallet password to continue",
+                    prompt: {
                         model: "",
                         type: "password"
-                    } : null
-                })
-            }).then(password => password || "")
+                    }
+                };
+                const noPasswordOpts = {
+                    ...sharedOpts,
+                    medsage: noPasswordMessage
+                };
+                let usedOpts = hasPassword ? hasPasswordOpts : noPasswordOpts;
+                return this.$q.dialog(usedOpts);
+            })
+            .catch(() => {});
         }
     }
 }

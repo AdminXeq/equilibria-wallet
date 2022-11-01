@@ -1,14 +1,16 @@
 <template>
-<div class="triton-field" :class="{disable, 'disable-hover': disableHover}">
-    <div class="label row items-center" v-if="label" :disabled="disable">
+  <div class="triton-field" :class="{ disable, 'disable-hover': disableHover }">
+    <div v-if="label" class="label row items-center" :disabled="disable">
         {{ label }}
         <span v-if="optional" class="optional">(Optional)</span>
     </div>
-    <div class="content row items-center" :class="{error}">
+    <div class="content row items-center" :class="{ error }">
         <slot></slot>
     </div>
-    <div class="error-label" v-if="error && errorLabel" :disabled="disable">{{ errorLabel }}</div>
-</div>
+    <div v-if="error && errorLabel" class="error-label" :disabled="disable">
+      {{ errorLabel }}
+    </div>
+  </div>
 </template>
 
 <script>
@@ -21,8 +23,7 @@ export default {
         },
         error: {
             type: Boolean,
-            required: false,
-            default: false
+            required: false
         },
         errorLabel: {
             type: String,
@@ -30,23 +31,19 @@ export default {
         },
         optional: {
             type: Boolean,
-            required: false,
-            default: false
+            required: false
         },
         disable: {
             type: Boolean,
-            required: false,
-            default: false
+            required: false
         },
         disableHover: {
             type: Boolean,
-            required: false,
-            default: false
+            required: false
         }
     },
-    data () {
-        return {
-        }
+    data() {
+        return {};
     }
 }
 </script>
@@ -57,7 +54,6 @@ export default {
         margin: 6px 0;
         font-weight: bold;
         font-size: 12px;
-        text-transform: uppercase;
 
         // Disable text selection
         -webkit-user-select: none;
@@ -82,8 +78,19 @@ export default {
             margin-right: 0px;
         }
 
-        .q-input, .q-select, .q-datetime-input {
-            flex: 1;
+        .q-input,
+        .q-select {
+          flex: 1;
+          margin: 0;
+          
+          * {
+            color: navy;
+          }
+        }
+
+        .q-date {
+          min-width: 100%;
+          max-width: 100%;
         }
 
         .q-btn {

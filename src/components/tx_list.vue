@@ -1,66 +1,57 @@
 <template>
-<div class="tx-list">
-
+  <div class="tx-list">
     <template v-if="tx_list_paged.length === 0">
-        <p class="q-pa-md q-mb-none">No transactions found</p>
+      <p class="q-pa-md q-mb-none">No transactions found</p>
     </template>
 
     <template v-else>
-        <q-infinite-scroll :handler="loadMore" ref="scroller">
-            <q-list link no-border :dark="theme=='dark'" class="triton-list tx-list">
-                <q-item class="triton-list-item transaction" v-for="(tx, index) in tx_list_paged.slice(0, this.amount)" :key="tx.txid"
-                        @click.native="details(tx)" :class="'tx-'+tx.type">
-                    <q-item-side class="type">
-                        <div>{{ tx.type | typeToString }}</div>
-                    </q-item-side>
-                    <q-item-main class="main">
-                        <q-item-tile class="amount" label>
-                            <Formattriton :amount="tx.amount" />
-                        </q-item-tile>
-                        <q-item-tile sublabel>{{ tx.txid }}</q-item-tile>
-                    </q-item-main>
-                    <q-item-side class="meta">
-                        <q-item-tile label>
-                            <timeago :datetime="tx.timestamp*1000" :auto-update="60" />
-                        </q-item-tile>
-                        <q-item-tile sublabel>{{ formatHeight(tx) }}</q-item-tile>
-                    </q-item-side>
+      <q-infinite-scroll ref="scroller" @load="loadMore">
+        <q-list link no-border :dark="theme == 'dark'" class="triton-list tx-list">
+          <q-item v-for="tx in tx_list_paged" :key="`${tx.txid}-${tx.type}`"
+            class="triton-list-item transaction" :class="'tx-' + tx.type"
+            @click.native="details(tx)"
+          >
+            <q-item-section class="type">
+              <div>{{ tx.type | typeToString }}</div>
+            </q-item-section>
+            <q-item-label class="main">
+              <q-item-label class="amount">
+                <Formattriton :amount="tx.amount" />
+              </q-item-label>
+              <q-item-label caption>{{ tx.txid }}</q-item-label>
+            </q-item-label>
+            <q-item-section class="meta">
+              <q-item-label>
+                <timeago :datetime="tx.timestamp*1000" :auto-update="60" />
+              </q-item-label>
+              <q-item-label caption>{{ formatHeight(tx) }}</q-item-label>
+            </q-item-section>
 
-                    <q-context-menu>
-                        <q-list link separator style="min-width: 150px; max-height: 300px;">
-                            <q-item v-close-overlay
-                                    @click.native="details(tx)">
-                                <q-item-main label="Show details" />
-                            </q-item>
-
-                            <q-item v-close-overlay
-                                    @click.native="copyTxid(tx.txid, $event)">
-                                <q-item-main label="Copy transaction id" />
-                            </q-item>
-
-                            <q-item v-close-overlay
-                                    @click.native="openExplorer(tx.txid)">
-                                <q-item-main label="View on explorer" />
-                            </q-item>
-                        </q-list>
-                    </q-context-menu>
-
+            <q-menu context-menu>
+              <q-list separator style="min-width: 150px; max-height: 300px;">
+                <q-item v-close-popup clickable @click.native="details(tx)">
+                  <q-item-section>Show details</q-item-section>
                 </q-item>
-                <q-spinner-dots slot="message" :size="40"></q-spinner-dots>
-            </q-list>
-        </q-infinite-scroll>
-        <div v-if="tx_list_paged.length > 10" style="margin-left: auto; width: 150px; margin-right: auto">
-            <q-field class="q-pt-sm" >
-                <q-btn style="margin-left: auto; width: 150px; margin-right: auto"
-                    class="send-btn"
-                    color="positive" @click="addmore()" label="More" />
-            </q-field>
-        </div>
+
+                <q-item v-close-popup clickable @click.native="copyTxid(tx.txid, $event)">
+                  <q-item-section>Copy transaction id</q-item-section>
+                </q-item>
+
+                <q-item v-close-popup clickable @click.native="openExplorer(tx.txid)">
+                  <q-item-section>View on explorer</q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
+          </q-item>
+          <QSpinnerDots slot="message" :size="40"></QSpinnerDots>
+        </q-list>
+      </q-infinite-scroll>
+      <div v-if="tx_list_paged.length > 10" class="send-btn" style="margin-left: auto; width: 150px; margin-right: auto">
+        <q-btn style="margin-left: auto; width: 150px; margin-right: auto" color="positive" :label="More" @click="addmore()"/>
+      </div>
     </template>
-
     <TxDetails ref="txDetails" />
-
-</div>
+  </div>
 </template>
 
 <script>
@@ -308,9 +299,9 @@ export default {
         }
 
         .type {
-
+            min-width: 100px;
+            max-width: 100px;
             div {
-                min-width: 100px;
                 margin-right: 8px;
             }
         }

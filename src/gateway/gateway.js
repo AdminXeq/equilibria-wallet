@@ -43,7 +43,6 @@ export class Gateway extends EventEmitter {
         ipcRenderer.on("confirmClose", () => {
             this.confirmClose("Are you sure you want to exit?")
         })
-    
 
         ipcRenderer.on("showQuitScreen", () => {
             if (this.router) {
@@ -65,6 +64,7 @@ export class Gateway extends EventEmitter {
             return
         }
         this.closeDialog = true
+
         Dialog.create({
             title: restart ? "Restart" : "Exit",
             message: msg,
@@ -76,13 +76,15 @@ export class Gateway extends EventEmitter {
                 flat: true,
                 label: "CANCEL",
                 color: "red"
-            }
-        }).then(() => {
+            },
+            dark: this.app.store.state.gateway.app.config.apperance.theme === "dark"
+        })
+          .onOk(() => {
             this.closeDialog = false
             Loading.hide()
             this.router.replace({ path: "/quit" })
             ipcRenderer.send("confirmClose", restart)
-        }).catch(() => {
+        }).onCancel(() => {
             this.closeDialog = false
         })
     }
@@ -150,7 +152,7 @@ export class Gateway extends EventEmitter {
             this.confirmClose("Changes require restart. Would you like to restart now?", true)
             break
 
-        case "show_notification":
+        case "show_notification": {
             let notification = {
                 type: "positive",
                 timeout: 1000,
@@ -158,6 +160,7 @@ export class Gateway extends EventEmitter {
             }
             Notify.create(Object.assign(notification, decrypted_data.data))
             break
+        }
 
         case "show_loading":
             Loading.show({ ...(decrypted_data.data || {}) })

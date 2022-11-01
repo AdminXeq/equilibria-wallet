@@ -1,211 +1,51 @@
 <template>
-<q-page class="receive">
-    <q-list link no-border :dark="theme=='dark'" class="triton-list">
+  <q-page class="receive">
+    <q-list link no-border :dark="theme == 'dark'" class="triton-list">
+      <q-item-label header>
+        {{ "My Primary Address" }}
+      </q-item-label>
+      <ReceiveItem v-for="address in address_list.primary" :key="address.address" class="primary-address"
+        :address="address" :sublabel="`${"Primary Address"}`" :showQR="showQR" :copyAddress="copyAddress" :details="details" whiteQRIcon />
 
-        <q-list-header>My primary address</q-list-header>
-        <q-list class="triton-list-item primary-address" no-border v-for="address in address_list.primary" :key="address.address" @click.native="details(address)">
-            <q-item>
-                <q-item-main>
-                    <q-item-tile class="ellipsis" label>{{ address.address }}</q-item-tile>
-                    <q-item-tile sublabel>Primary address</q-item-tile>
-                </q-item-main>
-                <q-item-side>
-                    <q-btn
-                        flat
-                        style="width:25px;"
-                        size="md"
-                        @click="showQR(address.address, $event)"
-                    >
-                        <img src="statics/qr-code.svg" height="20" />
-                        <q-tooltip anchor="bottom right" self="top right" :offset="[0, 5]">
-                            Show QR code
-                        </q-tooltip>
-                    </q-btn>
-                    <q-btn
-                        flat
-                        style="width:25px;"
-                        size="md" icon="file_copy"
-                        @click="copyAddress(address.address, $event)"
-                    >
-                        <q-tooltip anchor="bottom right" self="top right" :offset="[0, 5]">
-                            Copy address
-                        </q-tooltip>
-                    </q-btn>
-                </q-item-side>
-            </q-item>
-            <q-context-menu>
-                <q-list link separator style="min-width: 150px; max-height: 300px;">
-                    <q-item v-close-overlay
-                            @click.native="details(address)">
-                        <q-item-main label="Show details" />
-                    </q-item>
+      <template v-if="address_list.used.length">
+        <q-item-label header>{{ "My Used Addresses" }}</q-item-label>
+        <ReceiveItem v-for="address in address_list.used" :key="address.address" :address="address"
+          :sublabel="`${"Sub-address"} (${"Index", { index: address.address_index })}`" :showQR="showQR" :copyAddress="copyAddress" :details="details" />
+      </template>
 
-                    <q-item v-close-overlay
-                            @click.native="copyAddress(address.address, $event)">
-                        <q-item-main label="Copy address" />
-                    </q-item>
-                </q-list>
-            </q-context-menu>
-        </q-list>
-
-        <template v-if="address_list.used.length">
-            <q-list-header>My used addresses</q-list-header>
-            <q-list class="triton-list-item" no-border v-for="address in address_list.used" @click.native="details(address)" :key="address.address">
-                <q-item>
-                    <q-item-main>
-                        <q-item-tile class="ellipsis" label>{{ address.address }}</q-item-tile>
-                        <q-item-tile sublabel>Ssecondary {{ address.address_index }}</q-item-tile>
-                    </q-item-main>
-                    <q-item-side>
-                        <q-btn
-                            flat
-                            style="width:25px;"
-                            size="md"
-                            @click="showQR(address.address, $event)"
-                        >
-                            <img src="statics/qr-code-grey.svg" height="20" />
-                            <q-tooltip anchor="bottom right" self="top right" :offset="[0, 5]">
-                                Show QR code
-                            </q-tooltip>
-                        </q-btn>
-                        <q-btn
-                            flat
-                            style="width:25px;"
-                            size="md" icon="file_copy"
-                            @click="copyAddress(address.address, $event)">
-                            <q-tooltip anchor="bottom right" self="top right" :offset="[5, 10]">
-                                Copy address
-                            </q-tooltip>
-                        </q-btn>
-                    </q-item-side>
-                </q-item>
-                <q-item-separator />
-                <q-item class="info">
-                    <q-item-main class="flex justify-between">
-                        <div class="column">
-                            <span>Balance</span>
-                            <span class="value">{{ address.balance | currency }}</span>
-                        </div>
-                        <div class="column">
-                            <span>Unlocked balance</span>
-                            <span class="value">{{ address.unlocked_balance | currency }}</span>
-                        </div>
-                        <div class="column">
-                            <span>Unspent outputs</span>
-                            <span class="value">{{ address.num_unspent_outputs | toString }}</span>
-                        </div>
-                    </q-item-main>
-                </q-item>
-
-                <q-context-menu>
-                    <q-list link separator style="min-width: 150px; max-height: 300px;">
-                        <q-item v-close-overlay
-                                @click.native="details(address)">
-                            <q-item-main label="Show details" />
-                        </q-item>
-
-                        <q-item v-close-overlay
-                                @click.native="copyAddress(address.address, $event)">
-                            <q-item-main label="Copy address" />
-                        </q-item>
-                    </q-list>
-                </q-context-menu>
-            </q-list>
-        </template>
-<!--        {{showMessage}}-->
-
-        <div v-if="!show"  style="margin-left: auto; width: 250px; margin-right: auto">
-            <q-field class="q-pt-sm" >
-                <q-btn style="margin-left: auto; width: 250px; margin-right: auto"
-                       class="send-btn"
-                       color="positive" @click.native="showUnused()" label="Show Secondary Addresses" />
-            </q-field>
-        </div>
-        <div v-else  style="margin-left: auto; width: 250px; margin-right: auto">
-            <q-field class="q-pt-sm" >
-                <q-btn style="margin-left: auto; width: 250px; margin-right: auto"
-                       class="send-btn"
-                       color="positive" @click.native="showUnused()" label="Hide Secondary Addresses" />
-            </q-field>
-        </div>
-        <template v-if="show" >
-            <q-list class="triton-list-item" no-border v-for="address in address_list.unused" @click.native="details(address)" :key="address.address">
-                <q-item>
-                    <q-item-main>
-                        <q-item-tile class="ellipsis" label>{{ address.address }}</q-item-tile>
-                        <q-item-tile sublabel>Sub-address (Index {{ address.address_index }})</q-item-tile>
-                    </q-item-main>
-                    <q-item-side>
-                        <q-btn
-                            flat
-                            style="width:25px;"
-                            size="md"
-                            @click="showQR(address.address, $event)"
-                        >
-                            <img src="statics/qr-code-grey.svg" height="20" />
-                            <q-tooltip anchor="bottom right" self="top right" :offset="[0, 5]">
-                                Show QR code
-                            </q-tooltip>
-                        </q-btn>
-                        <q-btn
-                            flat
-                            style="width:25px;"
-                            size="md" icon="file_copy"
-                            @click="copyAddress(address.address, $event)">
-                            <q-tooltip anchor="bottom right" self="top right" :offset="[5, 10]">
-                                Copy address
-                            </q-tooltip>
-                        </q-btn>
-                    </q-item-side>
-                </q-item>
-
-                <q-context-menu>
-                    <q-list link separator style="min-width: 150px; max-height: 300px;">
-                        <q-item v-close-overlay
-                                @click.native="details(address)">
-                            <q-item-main label="Show details" />
-                        </q-item>
-
-                        <q-item v-close-overlay
-                                @click.native="copyAddress(address.address, $event)">
-                            <q-item-main label="Copy address" />
-                        </q-item>
-                    </q-list>
-                </q-context-menu>
-
-           </q-list>
-        </template>
+      <template v-if="address_list.unused.length">
+        <q-item-label header>My Unused Addresses</q-item-label>
+        <ReceiveItem v-for="address in address_list.unused" :key="address.address"
+          sublabel="`${"Sub-Address"} (${"Index", { address.address_index })}`"" :showQR="showQR" :copyAddress="copyAddress" :details="details" :shouldShowInfo="false" />
+      </template>
 
     </q-list>
     <AddressDetails ref="addressDetails" />
 
     <!-- QR Code -->
     <template v-if="QR.address != null">
-        <q-modal v-model="QR.visible" minimized :content-css="{padding: '25px'}">
-
-            <div class="text-center q-mb-sm q-pa-md" style="background: white;">
-                <qrcode-vue :value="QR.address" size="240" ref="qr">
-                </qrcode-vue>
-                <q-context-menu>
-                    <q-list link separator style="min-width: 150px; max-height: 300px;">
-                        <q-item v-close-overlay @click.native="copyQR()">
-                            <q-item-main label="Copy QR code" />
-                        </q-item>
-                        <q-item v-close-overlay @click.native="saveQR()">
-                            <q-item-main label="Save QR code to file" />
-                        </q-item>
-                    </q-list>
-                </q-context-menu>
-            </div>
-
-            <q-btn
-                 color="primary"
-                 @click="QR.visible = false"
-                 label="Close"
-             />
-        </q-modal>
+      <q-dialog v-model="QR.visible" :content-class="'qr-code-modal'">
+        <q-card class="qr-code-card">
+          <div class="text-center q-mb-sm q-pa-md" style="background: white;">
+            <QrcodeVue ref="qr" :value="QR.address" size="240"> </QrcodeVue>
+            <q-menu context-menu>
+              <q-list class="context-menu">
+                <q-item v-close-popup clickable @click.native="copyQR()">
+                  <q-item-section>Copy QR Code</q-item-section>
+                </q-item>
+                <q-item v-close-popup clickable @click.native="saveQR()">
+                  <q-item-section>Save QR Code</q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
+          </div>
+          <q-card-actions>
+            <q-btn color="primary" label="Close" @click="QR.visible = false" />
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
     </template>
-</q-page>
+  </q-page>
 </template>
 
 <script>
@@ -215,6 +55,7 @@ import { mapState } from "vuex"
 import QrcodeVue from "qrcode.vue"
 // import Identicon from "components/identicon"
 import AddressDetails from "components/address_details"
+import ReceiveItem from "components/receive_item"
 
 export default {
     computed: mapState({
@@ -274,8 +115,9 @@ export default {
         },
         copyAddress (address, event) {
             event.stopPropagation()
+
             for (let i = 0; i < event.path.length; i++) {
-                if (event.path[i].tagName === "BUTTON") {
+                if (event.path[i].tagName == "BUTTON") {
                     event.path[i].blur()
                     break
                 }
@@ -291,30 +133,28 @@ export default {
     components: {
         // Identicon,
         AddressDetails,
-        QrcodeVue
+        QrcodeVue,
+        ReceiveItem
     }
 }
 </script>
 
 <style lang="scss">
+.qr-options-menu {
+  min-width: 150px;
+  max-height: 300px;
+  color: white;
+}
+
 .receive {
     .q-item-label {
         font-weight: 400;
     }
 
-    .q-item-sublabel, .q-list-header {
-        font-size: 13px;
-    }
-
     .triton-list-item {
         cursor: pointer;
 
-        .q-item {
-            padding-top: 4px;
-            padding-bottom: 4px;
-        }
-
-        .q-item-side {
+        .q-item-section {
             display: flex;
             justify-content: center;
             align-items: center;

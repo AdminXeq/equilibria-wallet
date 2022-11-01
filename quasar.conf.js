@@ -1,20 +1,12 @@
 // Configuration for your app
 
-module.exports = function (ctx) {
+module.exports = function() {
     return {
-        // app plugins (/src/plugins)
-        plugins: [
-            "i18n",
-            "axios",
-            "vuelidate",
-            "gateway",
-            "timeago"
-        ],
-        css: [
-            "app.styl"
-        ],
+        // app boot (/src/boot)
+        boot: ["i18n", "axios", "vuelidate", "gateway", "timeago"],
+        css: ["app.styl"],
         extras: [
-            ctx.theme.mat ? "roboto-font" : null,
+            // ctx.theme.mat ? "roboto-font" : null,
             "material-icons" // optional, you are not bound to it
             // "ionicons",
             // "mdi",
@@ -28,7 +20,7 @@ module.exports = function (ctx) {
             // gzip: true,
             // analyze: true,
             // extractCSS: false,
-            extendWebpack (cfg) {
+            extendWebpack() {
                 /*
                 cfg.module.rules.push({
                     enforce: "pre",
@@ -48,9 +40,9 @@ module.exports = function (ctx) {
         framework: {
             components: [
                 "QLayout",
-                "QLayoutHeader",
-                "QLayoutFooter",
-                "QLayoutDrawer",
+                "QHeader",
+                "QFooter",
+                "QDrawer",
                 "QPageContainer",
                 "QPage",
                 "QToolbar",
@@ -67,35 +59,29 @@ module.exports = function (ctx) {
                 "QTab",
                 "QRouteTab",
                 "QBtnDropdown",
-                "QPopover",
-                "QModal",
-                "QModalLayout",
+                "QMenu",
+                "QDialog",
                 "QStep",
                 "QStepper",
                 "QStepperNavigation",
                 "QSpinner",
                 "QList",
-                "QListHeader",
+                "QItemLabel",
                 "QItem",
-                "QItemMain",
-                "QItemSeparator",
-                "QItemSide",
-                "QItemTile",
+                "QSeparator",
+                "QItemSection",
                 "QSelect",
                 "QToggle",
                 "QPageSticky",
-                "QCollapsible",
+                "QExpansionItem",
                 "QCheckbox",
                 "QInnerLoading",
                 "QInfiniteScroll",
-                "QDatetime",
-                "QContextMenu",
+                "QDate",
+                "QTime",
                 "QScrollArea"
             ],
-            directives: [
-                "Ripple",
-                "CloseOverlay"
-            ],
+            directives: ["Ripple"],
             // Quasar plugins
             plugins: [
                 "Notify",
@@ -152,7 +138,7 @@ module.exports = function (ctx) {
         },
         electron: {
             bundler: "builder", // or "packager"
-            extendWebpack (cfg) {
+            extendWebpack(cfg) {
                 // do something with Electron process Webpack cfg
             },
             packager: {
@@ -177,11 +163,8 @@ module.exports = function (ctx) {
                 appId: "com.equilibria.wallet",
                 productName: "Equilibria Wallet",
                 copyright: "Copyright © 2018-2022 Equilibria Project, 2020 Ryo Currency Project, 2020 Loki Network",
-
-                // directories: {
-                //     buildResources: "src-electron/build"
-                // },
-                artifactName: "equilibria-wallet-${version}-${os}-${arch}.${ext}",
+                // afterSign: "build/notarize.js",
+                artifactName: "equilibria-electron-wallet-${version}-${os}-${arch}.${ext}",
                 publish: "github",
 
                 linux: {
@@ -191,12 +174,20 @@ module.exports = function (ctx) {
                 },
 
                 mac: {
+                    target: ["dmg", "zip"], // zip for auto-updating
                     icon: "src-electron/icons/icon.icns",
-                    category: "public.app-category.finance"
+                    category: "public.app-category.finance",
+                    // Notarizing: https://kilianvalkhof.com/2019/electron/notarizing-your-electron-application/
+                    // Will be working before release
+                    // hardenedRuntime: true,
+                    // gatekeeperAssess: false,
+                    // entitlements: "build/entitlements.mac.plist",
+                    // entitlementsInherit: "build/entitlements.mac.plist"
                 },
 
                 dmg: {
-                    background: "src-electron/build/triton-dmg.tiff"
+                    background: "src-electron/build/triton-dmg.tiff",
+                    sign: false
                 },
 
                 nsis: {
@@ -204,10 +195,18 @@ module.exports = function (ctx) {
                     allowToChangeInstallationDirectory: true
                 },
 
+                files: [
+                  "!build/*.js",
+                  "!.env",
+                  "!dev-app-update.yml",
+                  "!downloads/**",
+                  "!dist/**"
+                ],
+
                 extraResources: [
                     "bin"
                 ]
             }
         }
-    }
-}
+    };
+};

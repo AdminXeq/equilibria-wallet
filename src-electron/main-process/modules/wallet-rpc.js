@@ -878,7 +878,7 @@ export class WalletRPC {
             //     //         this.sendGateway("set_wallet_error", {
             //     //             status: {
             //     //                 code: -1,
-            //     //                 message: "Failed to open wallet. Please try again."
+            //     //                 message: "Failed to open wallet. Please try again"
             //     //             }
             //     //         })
             //     //     })
@@ -895,7 +895,7 @@ export class WalletRPC {
             //         this.sendGateway("set_wallet_error", {
             //             status: {
             //                 code: -1,
-            //                 message: "Failed to open wallet. Please try again."
+            //                 message: "Failed to open wallet. Please try again"
             //             }
             //         })
             //     })
@@ -933,7 +933,7 @@ export class WalletRPC {
             if (err) {
                 this.sendGateway("show_notification", {
                     type: "negative",
-                    message: "Password Error",
+                    message: "Password error",
                     timeout: 2000
                 })
                 return

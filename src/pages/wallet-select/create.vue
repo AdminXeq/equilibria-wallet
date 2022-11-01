@@ -5,9 +5,10 @@
             <q-input
                 v-model="wallet.name"
                 @blur="$v.wallet.name.$touch"
-                :dark="theme=='dark'"
+                :dark="theme == 'dark'"
                 placeholder="A name for your account"
-                hide-underline
+                borderless
+                dense
             />
         </tritonField>
 
@@ -15,8 +16,9 @@
             <q-select
                 v-model="wallet.language"
                 :options="languageOptions"
-                :dark="theme=='dark'"
-                hide-underline
+                :dark="theme == 'dark'"
+                borderless
+                dense
             />
         </tritonField>
 
@@ -24,9 +26,10 @@
             <q-input
                 v-model="wallet.password"
                 type="password"
-                :dark="theme=='dark'"
+                :dark="theme == 'dark'"
                 placeholder="An optional password for the account"
-                hide-underline
+                borderless
+                dense
             />
         </tritonField>
 
@@ -34,14 +37,13 @@
             <q-input
                 v-model="wallet.password_confirm"
                 type="password"
-                :dark="theme=='dark'"
-                hide-underline
+                :dark="theme == 'dark'"
+                borderless
+                dense
             />
         </tritonField>
 
-        <q-field>
-            <q-btn color="primary" @click="create" label="Create Account" />
-        </q-field>
+        <q-btn class="submit-button" color="primary" label="Create Account" @click="create" />
 
     </div>
 </q-page>
@@ -147,18 +149,21 @@ export default {
                         flat: true,
                         label: "CANCEL",
                         color: "red"
-                    }
-                })
+                    },
+                    dark: this.theme == "dark",
+                    color: "positive"
+                });
             }
 
             passwordPromise
-                .then(() => {
+                .onOk(() => {
                     this.$q.loading.show({
                         delay: 0
                     })
                     this.$gateway.send("wallet", "create_wallet", this.wallet)
                 })
-                .catch(() => {})
+                .onDismiss(() => {})
+                .onCancel(() => {});
         },
         cancel () {
             this.$router.replace({ path: "/wallet-select" })
@@ -172,10 +177,10 @@ export default {
 
 <style lang="scss">
 .create-wallet {
-    .fields {
-        > * {
-            margin-bottom: 16px;
-        }
-    }
+//    .fields {
+//        > * {
+//            margin-bottom: 16px;
+//        }
+//    }
 }
 </style>

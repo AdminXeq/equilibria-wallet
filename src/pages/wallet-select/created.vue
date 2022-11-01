@@ -8,7 +8,7 @@
             </div>
             <div class="q-item-side">
                 <q-btn
-                    color="primary" style="width:25px;"
+                    color="primary" padding="xs"
                     size="sm" icon="file_copy"
                     @click="copyAddress(info.address, $event)">
                     <q-tooltip anchor="center left" self="center right" :offset="[5, 10]">
@@ -40,7 +40,7 @@
         </div>
     </template>
 
-    <q-collapsible label="Advanced" header-class="q-mt-sm non-selectable row reverse advanced-options-label">
+    <q-expansion-item label="Advanced" header-class="q-mt-sm non-selectable row reverse advanced-options-label">
         <template v-if="secret.view_key != secret.spend_key">
             <h6 class="q-mb-xs title">View key</h6>
             <div class="row">
@@ -48,10 +48,7 @@
                     {{ secret.view_key }}
                 </div>
                 <div class="q-item-side">
-                    <q-btn
-                        color="primary" style="width:25px;"
-                        size="sm" icon="file_copy"
-                        @click="copyPrivateKey('view_key', $event)">
+                    <q-btn color="primary" padding="xs" size="sm" icon="file_copy" @click="copyPrivateKey('view_key', $event)">
                         <q-tooltip anchor="center left" self="center right" :offset="[5, 10]">
                             Copy view key
                         </q-tooltip>
@@ -67,10 +64,7 @@
                     {{ secret.spend_key }}
                 </div>
                 <div class="q-item-side">
-                    <q-btn
-                        color="primary" style="width:25px;"
-                        size="sm" icon="file_copy"
-                        @click="copyPrivateKey('spend_key', $event)">
+                    <q-btn color="primary" padding="xs" size="sm" icon="file_copy" @click="copyPrivateKey('spend_key', $event)">
                         <q-tooltip anchor="center left" self="center right" :offset="[5, 10]">
                             Copy spend key
                         </q-tooltip>
@@ -78,7 +72,7 @@
                 </div>
             </div>
         </template>
-    </q-collapsible>
+    </q-expansion-item>
 
     <q-btn class="q-mt-lg" color="primary" @click="open" label="Open Account" />
 
@@ -93,6 +87,7 @@ export default {
     computed: mapState({
         info: state => state.gateway.wallet.info,
         secret: state => state.gateway.wallet.secret,
+        theme: state => state.gateway.app.config.appearance.theme,
         walletName (state) {
             return `Wallet: ${this.info.name}`
         }
@@ -126,16 +121,14 @@ export default {
                 message: "Be careful who you send your private keys to as they control your funds.",
                 ok: {
                     label: "OK",
-                    color: "positive"
-
-                }
-            }).then(() => {
-                this.$q.notify({
-                    type: "positive",
-                    timeout: 1000,
-                    message: "address copied to clipboard"
-                })
-            }).catch(() => {
+                    color: "primary"
+                },
+                color: this.theme === "dark" ? "white" : "dark",
+                dark: this.theme === "dark"
+            })
+            .onDismiss(() => null)
+            .onCancel(() => null)
+            .onOk(() => {
                 this.$q.notify({
                     type: "positive",
                     timeout: 1000,
@@ -170,20 +163,19 @@ export default {
                 message: "Be careful who you send your private keys to as they control your funds.",
                 ok: {
                     label: "OK",
-                    color: "positive"
-
-                }
-            }).then(() => {
+                    color: "primary"
+                },
+                color: this.theme === "dark" ? "white" : "dark",
+                dark: this.theme === "dark"
+            })
+            .onDismiss(() => null)
+            .onCancel(() => null)
+            .onOk(() => {
                 this.$q.notify({
                     type: "positive",
                     timeout: 1000,
-                    message: type_human + " copied to clipboard"
-                })
-            }).catch(() => {
-                this.$q.notify({
-                    type: "positive",
-                    timeout: 1000,
-                    message: type_human + " copied to clipboard"
+                    message: type_human + " copied to clipboard",
+                    dark: this.theme == "dark"
                 })
             })
         }

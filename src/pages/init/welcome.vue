@@ -1,13 +1,13 @@
 <template>
     <q-page class="welcome">
 
-        <q-stepper class="no-shadow" ref="stepper" :color="theme == 'dark' ? 'light' : 'dark'" dark @step="onStep">
+        <q-stepper ref="stepper" v-model="step" class="welcome-stepper" flat dark>
 
-            <q-step default title="Welcome" class="first-step">
+            <q-step :name="1" :title="Welcome" :done="step > 1" class="first-step">
 
                 <div class="welcome-container">
-                    <img src="statics/xeq_logo_with_padding.png" height="100" class="q-mb-md">
-                    <div style="padding-bottom: 15px">Version: ATOM v{{ version }}-v{{ daemonVersion }}</div>
+                    <img src="xeq_logo_with_padding.png" height="100" class="q-mb-md">
+                    <div style="padding-bottom: 15px">Version: v{{ version }}-v{{ daemonVersion }}</div>
 
                     <q-btn
                         color="primary"
@@ -19,12 +19,12 @@
 
             </q-step>
 
-            <q-step title="Configure">
+            <q-step :name="2" :title="Configure">
                 <SettingsGeneral randomise_remote ref="settingsGeneral"/>
             </q-step>
         </q-stepper>
 
-        <q-layout-footer v-if="!is_first_page" class="no-shadow q-pa-sm">
+        <q-footer v-if="!(step === 1)" class="no-shadow q-pa-sm">
             <div class="row justify-end">
                 <div>
                     <q-btn
@@ -42,7 +42,7 @@
                     />
                 </div>
             </div>
-        </q-layout-footer>
+        </q-footer>
 
     </q-page>
 </template>
@@ -62,7 +62,7 @@ export default {
     }),
     data () {
         return {
-            is_first_page: true,
+            step: 1,
             choose_lang: "EN",
             version: "",
             daemonVersion: ""
@@ -80,11 +80,8 @@ export default {
         })
     },
     methods: {
-        onStep () {
-            this.is_first_page = this.$refs.stepper.steps[0].active
-        },
         clickNext () {
-            if (this.$refs.stepper.steps[this.$refs.stepper.length - 1].active) {
+            if (this.step === 2) {
                 this.$gateway.send("core", "save_config_init", this.pending_config)
                 this.$router.replace({ path: "/" })
             } else {
@@ -104,12 +101,19 @@ export default {
 <style lang="scss">
 
 .welcome {
+    height: 100vh;
+
+    .welcome-stepper {
+      height: 100%;
+      background: transparent;
+    }
+
     .welcome-container {
+        padding-top: 14vh;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        height: 100%;
     }
 
     .first-step .q-stepper-step-inner {
@@ -138,12 +142,6 @@ export default {
 }
 
 .q-stepper-header {
-    min-height: 50px;
-
-    .q-stepper-tab {
-        padding-top: 0;
-        padding-bottom: 0;
-    }
-
+    min-height: 10vh;
 }
 </style>

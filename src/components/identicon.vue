@@ -1,18 +1,22 @@
 <template>
-<div class="identicon"
-     v-bind:style="{backgroundImage: 'url('+img+')', width: 8*size+'px', height: 8*size+'px'}">
-
-    <q-context-menu v-if="menu">
-        <q-list link separator style="min-width: 150px; max-height: 300px;">
-            <q-item v-close-overlay
-                    :disabled="img == defaultImg"
-                    @click.native="saveIdenticon()">
-                <q-item-main label="Save identicon to file" />
-            </q-item>
-        </q-list>
-    </q-context-menu>
-
-</div>
+  <div
+    class="identicon"
+    :style="{
+      backgroundImage: 'url(' + img + ')',
+      width: 8 * size + 'px',
+      height: 8 * size + 'px'
+    }"
+  >
+    <q-menu v-if="menu" context-menu>
+      <q-list separator class="context menu">
+        <q-item v-close-popup clickable :disabled="img == defaultImg" @click.native="saveIdenticon()">
+          <q-item-section>
+            Save identicon to file
+          </q-item-section>
+        </q-item>
+      </q-list>
+    </q-menu>
+  </div>
 </template>
 
 <script>

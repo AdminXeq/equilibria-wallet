@@ -1,112 +1,107 @@
 <template>
-<q-modal v-model="isVisible" maximized class="address-book-details">
+  <q-dialog v-model="isVisible" maximized class="address-book-details">
+    <q-layout v-if="mode == 'edit' || mode == 'new'">
+      <q-header>
+        <q-toolbar color="dark" inverted>
+          <q-btn flat round dense icon="reply" @click="close()" />
+          <q-toolbar-title v-if="mode=='new'">
+            Add address book entry
+          </q-toolbar-title>
+          <q-toolbar-title v-else-if="mode=='edit'">
+            Edit address book entry
+          </q-toolbar-title>
 
-    <q-modal-layout v-if="mode == 'edit' || mode == 'new'">
-        <q-toolbar slot="header" color="dark" inverted>
-            <q-btn flat round dense icon="reply" @click="close()" />
-            <q-toolbar-title v-if="mode=='new'">
-                Add address book entry
-            </q-toolbar-title>
-            <q-toolbar-title v-else-if="mode=='edit'">
-                Edit address book entry
-            </q-toolbar-title>
-
-            <q-btn v-if="mode=='edit'" color="red flat no-ripple" @click="cancelEdit()" label="Cancel" />
-            <q-btn class="q-ml-sm" color="primary" @click="save()" label="Save" />
-
+          <q-btn v-if="mode == 'edit'" color="red flat no-ripple" label="Cancel" @click="cancelEdit()" />
+          <q-btn class="q-ml-sm" color="primary" label="Save" @click="save()" />
         </q-toolbar>
+      </q-header>
+      <q-page-container>
         <div class="address-book-modal q-mx-md">
-            <tritonField label="Address" :error="$v.newEntry.address.$error">
-                <q-input
-                    v-model="newEntry.address"
-                    :placeholder="address_placeholder"
-                    @blur="$v.newEntry.address.$touch"
-                    :dark="theme=='dark'"
-                    hide-underline
-                    />
-                <q-checkbox
-                    v-model="newEntry.starred"
-                    checked-icon="star"
-                    unchecked-icon="star_border"
-                    class="star-entry"
-                    dark
-                    />
-            </tritonField>
-            <tritonField label="Name">
-                <q-input
-                    v-model="newEntry.name"
-                    :dark="theme=='dark'"
-                    hide-underline
-                    />
-            </tritonField>
-            <tritonField label="Payment ID" :error="$v.newEntry.payment_id.$error" optional>
-                <q-input
-                    v-model="newEntry.payment_id"
-                    placeholder="16 or 64 hexadecimal characters"
-                    @blur="$v.newEntry.payment_id.$touch"
-                    :dark="theme=='dark'"
-                    hide-underline
-                    />
-            </tritonField>
-            <tritonField label="Notes" optional>
-                <q-input
-                    v-model="newEntry.description"
-                    placeholder="Additional notes"
-                    type="textarea"
-                    :dark="theme=='dark'"
-                    hide-underline
-                    />
-            </tritonField>
-
-            <q-field v-if="mode=='edit'">
-                <q-btn class="float-right" color="red" @click="deleteEntry()" label="Delete" />
-            </q-field>
-        </div>
-    </q-modal-layout>
-
-    <q-modal-layout v-else>
-        <q-toolbar slot="header" color="dark" inverted>
-            <q-btn flat round dense icon="reply" @click="close()" />
-            <q-toolbar-title>
-                Address book details
-            </q-toolbar-title>
-            <q-btn class="q-mr-sm"
-                   flat no-ripple
-                   :disable="!is_ready"
-                   @click="edit()" label="Edit" />
+          <tritonField label="Address" :error="$v.newEntry.address.$error">
+            <q-input
+              v-model.trim="newEntry.address"
+              placeholder="address_placeholder"
+              :dark="theme == 'dark'"
+              borderless
+              dense
+              @blur="$v.newEntry.address.$touch"
+            />
             <q-btn
-                color="primary"
-                :disabled="view_only"
-                @click="sendToAddress"
-                label="Send coins" />
-        </q-toolbar>
-        <div class="layout-padding">
+              v-model.trim="newEntry.starred"
+              flat
+              round
+              :icon="newEntry.starred ? 'star' : 'star_border'"
+              @click="updareStarred"
+            />
+          </tritonField>
+          <tritonField label="Name">
+            <q-input v-model="newEntry.name" :dark="theme == 'dark'" borderless dense />
+          </tritonField>
+          <tritonField label="Payment ID" :error="$v.newEntry.payment_id.$error" optional>
+            <q-input
+              v-model.trim="newEntry.payment_id"
+              placeholder="16 or 64 hexadecimal characters"
+              :dark="theme == 'dark'"
+              borderless
+              dense
+              @blur="$v.newEntry.payment_id.$touch"
+            />
+          </tritonField>
+          <tritonField label="Notes" optional>
+            <q-input
+              v-model="newEntry.description"
+              placeholder="Additional notes"
+              type="textarea"
+              class="full-width text-area-triton"
+              :dark="theme == 'dark'"
+              borderless
+              dense
+            />
+          </tritonField>
 
-            <template v-if="entry != null">
-
-                <AddressHeader :address="entry.address"
-                               :title="entry.name"
-                               :payment_id="entry.payment_id"
-                               :extra="entry.description ? 'Notes: '+entry.description : ''"
-                               />
-
-                <div class="q-mt-lg">
-
-                    <div class="non-selectable">
-                        <q-icon name="history" size="24px" />
-                        <span class="vertical-middle q-ml-xs">Recent transactions with this address</span>
-                    </div>
-
-                    <TxList type="all_in" :limit="5" :to-outgoing-address="entry.address" :key="entry.address"/>
-
-                </div>
-
-            </template>
-
+          <q-btn
+            v-if="mode == 'edit'"
+            class="submit-button"
+            color="red"
+            label="Delete"
+            @click="deleteEntry()"
+          />
         </div>
-    </q-modal-layout>
+      </q-page-container>
+    </q-layout>
 
-</q-modal>
+    <q-layout v-else>
+      <q-header>
+        <q-toolbar color="dark" inverted>
+          <q-btn flat round dense icon="reply" @click="close()" />
+          <q-toolbar-title>
+            Address book details
+          </q-toolbar-title>
+          <q-btn class="q-mr-sm" flat no-ripple :disable="!is_ready" label="Edit" @click="edit()" />
+          <q-btn color="primary" :disabled="view_only" label="Send Coins" @click="sendToAddress" />
+        </q-toolbar>
+      </q-header>
+      <q-page-container>
+        <div class="layout-padding">
+          <template v-if="entry != null">
+            <AddressHeader :address="entry.address"
+                           :title="entry.name"
+                           :payment_id="entry.payment_id"
+                           :extra="entry.description ? 'Notes: ' + entry.description : ''"
+            />
+
+            <div class="q-mt-lg">
+              <div class="non-selectable">
+                <q-icon name="history" size="24px" />
+                <span class="vertical-middle q-ml-xs">Recent transactions with this address</span>
+              </div>
+              <TxList :key="entry.address" type="all_in" :limit="5" :to-outgoing-address="entry.address" />
+            </div>
+          </template>
+        </div>
+      </q-page-container>
+    </q-layout>
+  </q-dialog>
 </template>
 
 <script>
@@ -142,7 +137,7 @@ export default {
         },
         address_placeholder (state) {
             const wallet = state.gateway.wallet.info
-            const prefix = (wallet && wallet.address && wallet.address[0]) || "L"
+            const prefix = (wallet && wallet.address && wallet.address[0]) || "T"
             return `${prefix}..`
         }
     }),
@@ -211,6 +206,10 @@ export default {
                 description: "",
                 starred: false
             }
+        },
+        updateStarred() {
+          this.newEntry.starred = !this.newEntry.starred;
+          return;
         },
         close () {
             this.isVisible = false

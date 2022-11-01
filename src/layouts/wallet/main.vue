@@ -1,6 +1,6 @@
 <template>
     <q-layout view="hHh Lpr lFf">
-        <q-layout-header style="border-bottom: 1px solid white; margin: 10px">
+        <q-header style="border-bottom: 1px solid white; margin: 10px">
             <div class="flex items-center justify-center" style="margin-top:10px; padding-bottom: 20px">
                 <div style="padding-left: auto; padding-right: auto; padding-top: auto; padding-bottom: auto;">
                     <div class="funds column items-center">
@@ -18,15 +18,15 @@
                     </div>
                 </div>
             </div>
-            <main-menu/>
+            <MainMenu/>
 
             <div>
                 <div class="menu q-focus-helper" style="margin-top: 5px; top: 0px; left: 0px; position: absolute; opacity: 1 !important; margin: 10px">
-                    <img src="statics/xeq_logo_with_padding.png" height="60">
+                    <img src="xeq_logo_with_padding.png" height="60">
 
                 </div>
             </div>
-        </q-layout-header>
+        </q-header>
 
         <q-page-container>
             <!-- <AddressHeader :address="info.address" :title="info.name" /> -->
@@ -36,20 +36,20 @@
                 <div class="navigation row items-end">
                     <router-link to="/wallet">
                         <q-btn
-                            class="large-btn primary"
+                            class="large-btn"
                             label="Transactions"
                             size="md"
                             icon-right="swap_horiz"
-                            align="left"
+                            align="between"
                         />
                     </router-link>
                     <router-link to="/wallet/send">
                         <q-btn
-                            class="large-btn primary"
+                            class="large-btn"
                             label="Send"
                             size="md"
                             icon-right="arrow_right_alt"
-                            align="left"
+                            align="between"
                         />
                     </router-link>
                     <router-link to="/wallet/receive">
@@ -58,39 +58,39 @@
                             label="Receive"
                             size="md"
                             icon-right="save_alt"
-                            align="left"
+                            align="between"
                         />
                     </router-link>
-                    <!-- <router-link to="/wallet/swap">
+                    <router-link to="/wallet/swap">
                         <q-btn
-                            class="large-btn primary"
+                            class="large-btn"
                             label="wXEQ"
                             size="md"
                             icon-right="arrow_right_alt"
-                            align="left"
+                            align="between"
                         />
-                    </router-link> -->
+                    </router-link> 
                     <router-link to="/wallet/staking-pools">
                         <q-btn
-                            class="large-btn primary"
+                            class="large-btn"
                             label="Staking Pools"
                             size="md"
                             icon-right="arrow_right_alt"
-                            align="left"
+                            align="between"
                         />
                     </router-link>
-<!--                    <router-link to="/wallet/service-node">-->
-<!--                        <q-btn-->
-<!--                            class="large-btn primary"-->
-<!--                            label="Node Reg"-->
-<!--                            size="md"-->
-<!--                            icon-right="arrow_right_alt"-->
-<!--                            align="left"-->
-<!--                        />-->
-<!--                    </router-link>-->
+                    <router-link to="/wallet/service-node">
+                        <q-btn
+                            class="large-btn"
+                            label="Node Reg"
+                            size="md"
+                            icon-right="arrow_right_alt"
+                            align="between"
+                        />
+                    </router-link>
                     <router-link to="/wallet/addressbook">
                         <q-btn
-                            class="large-btn primary"
+                            class="large-btn"
                             label="Address Book"
                             size="md"
                             icon-right="person"
@@ -109,7 +109,7 @@
             </div>
         </q-page-container>
 
-        <status-footer/>
+        <StatusFooter/>
 
     </q-layout>
 </template>
@@ -182,6 +182,10 @@ export default {
     .single-icon {
         width: 38px;
         padding: 0;
+    }
+
+    a {
+      text-decoration: none
     }
 
     .large-btn {

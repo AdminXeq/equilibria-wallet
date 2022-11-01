@@ -6,25 +6,25 @@
     </template>
 
     <template v-else>
-        <q-infinite-scroll :handler="loadMore" ref="scroller">
-            <q-list link no-border :dark="theme=='dark'" class="triton-list tx-list">
-                <q-item class="triton-list-item transaction" v-for="(tx) in tx_list_paged" :key="tx.txid"
-                        @click.native="details(tx)" :class="'tx-'+tx.last_reward_block_height">
-                    <q-item-side class="type">
+        <q-infinite-scroll @load="loadMore" ref="scroller">
+            <q-list link no-border :dark="theme == 'dark'" class="triton-list tx-list">
+                <q-item class="triton-list-item transaction" v-for="x in tx_list_paged" :key="tx.txid"
+                        @click.native="details(tx)" :class="'tx-' + tx.last_reward_block_height">
+                    <q-item-section class="type">
                         <div>{{ Object.keys(tx.contributors).length }}</div>
-                    </q-item-side>
-                    <q-item-main class="main">
-                        <q-item-tile class="amount" label>
+                    </q-item-section>
+                    <q-item-label class="main">
+                        <q-item-label class="amount">
                             <Formattriton :amount="tx.total_contribute+'/'+tx.staking_requirement" />
-                        </q-item-tile>
-                        <q-item-tile sublabel>{{ tx.operator_address }}</q-item-tile>
-                    </q-item-main>
-                    <q-item-side class="meta">
-                        <q-item-tile label>
+                        </q-item-label>
+                        <q-item-label caption>{{ tx.operator_address }}</q-item-label>
+                    </q-item-label>
+                    <q-item-section class="meta">
+                        <q-item-label>
                             <timeago :datetime="tx.last_reward_transaction_index" :auto-update="60" />
-                        </q-item-tile>
-                        <q-item-tile sublabel>{tx.last_reward_block_height}</q-item-tile>
-                    </q-item-side>
+                        </q-item-label>
+                        <q-item-label caption>{tx.last_reward_block_height}</q-item-label>
+                    </q-item-section>
                 </q-item>
                 <q-spinner-dots slot="message" :size="40"></q-spinner-dots>
             </q-list>
@@ -281,9 +281,9 @@ export default {
         }
 
         .type {
-
+            min-width: 100px;
+            max-width: 100px;
             div {
-                min-width: 100px;
                 margin-right: 8px;
             }
         }

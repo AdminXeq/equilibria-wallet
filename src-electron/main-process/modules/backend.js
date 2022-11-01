@@ -301,8 +301,17 @@ export class Backend {
             break
 
         case "open_explorer":
+            let path = null
             if (params.type === "tx") {
-                require("electron").shell.openExternal("http://154.38.165.93/tx/" + params.id)
+                path = "tx"
+            } else if (params.type === "service_node") {
+                path = "service_node"
+            }
+
+            if (path) {
+                const baseUrl = "https://explorer.equilibriacc.com"
+                const url = `${baseUrl}/${path}/`
+                require("electron").shell.openExternal(url + params.id)
             }
             break
 
@@ -422,8 +431,7 @@ export class Backend {
             }
 
             // save config file back to file, so updated options are stored on disk
-            fs.writeFile(this.config_file, JSON.stringify(this.config_data, null, 4), "utf8", () => {
-            })
+            fs.writeFile(this.config_file, JSON.stringify(this.config_data, null, 4), "utf8", () => {})
 
             this.send("set_app_data", {
                 config: this.config_data,
@@ -440,11 +448,11 @@ export class Backend {
             // Check to see if data and wallet directories exist
             const dirs_to_check = [{
                 path: data_dir,
-                error: "Data storge path not found"
+                error: "Data Storage path not found"
             },
             {
                 path: wallet_data_dir,
-                error: "Wallet data storge path not found"
+                error: "Wallet Data Storage path not found"
             }]
 
             for (const dir of dirs_to_check) {
@@ -596,16 +604,10 @@ export class Backend {
                         })
                         // eslint-disable-next-line
                     }).catch(error => {
-                        this.daemon.killProcess()
-                        this.send("show_notification", { type: "negative", message: error.message, timeout: 3000 })
-                        if (this.config_data.daemons[net_type].type === "remote") {
-                            this.send("show_notification", {
-                                type: "negative",
-                                message: "Remote daemon cannot be reached",
-                                timeout: 3000
-                            })
+                        if (this.config_data.daemons[net_type].type == "remote") {
+                            this.send("show_notification", { type: "negative", message: "Remote daemon can not be reached", timeout: 2000 })
                         } else {
-                            this.send("show_notification", { type: "negative", message: error.message, timeout: 3000 })
+                            this.send("show_notification", { type: "negative", message: "Local daemon internal error", timeout: 2000 })
                         }
                         this.send("set_app_data", {
                             status: {

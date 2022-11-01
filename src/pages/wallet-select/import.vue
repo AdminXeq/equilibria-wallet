@@ -1,38 +1,33 @@
 <template>
-<q-page>
+  <q-page>
     <div class="q-mx-md import-wallet">
+      <tritonField label="New account name" :error="$v.wallet.name.$error">
+        <q-input v-model="wallet.name" placeholder="A name for your account"
+          :dark="theme == 'dark'" borderless dense @keyup.enter="import_wallet"
+          @blur="$v.wallet.name.$touch"
+        />
+      </tritonField>
 
-        <tritonField label="New account name" :error="$v.wallet.name.$error">
-            <q-input
-                v-model="wallet.name"
-                placeholder="A name for your account"
-                @blur="$v.wallet.name.$touch"
-                :dark="theme=='dark'"
-                hide-underline
-                />
-        </tritonField>
+      <tritonField label="Account file" disable-hover :error="$v.wallet.path.$error">
+        <q-input v-model="wallet.path" placeholder="Please select a file" disable
+          :dark="theme == 'dark'" borderless dense
+        />
+        <input id="walletPath" ref="fileInput" type="file" hidden @change="setWalletPath" />
+        <q-btn color="secondary" label="Select account file" :test-color="theme == 'dark' ? 'white' : 'dark'" @click="selectFile" />
+      </tritonField>
 
-        <tritonField label="Account file" disable-hover>
-            <q-input v-model="wallet.path" placeholder="Please select a file" disable :dark="theme=='dark'" hide-underline/>
-            <input type="file" id="walletPath" v-on:change="setWalletPath" ref="fileInput" hidden />
-            <q-btn color="secondary" v-on:click="selectFile" :text-color="theme=='dark'?'white':'dark'">Select account file</q-btn>
-        </tritonField>
+      <tritonField label="Password">
+        <q-input v-model="wallet.password" placeholder="An optional password for the account"
+          type="password" :dark="theme == 'dark'" borderless dense @keyup.enter="import_wallet" />
+      </tritonField>
 
-        <tritonField label="Password">
-            <q-input v-model="wallet.password" placeholder="An optional password for the account" type="password" :dark="theme=='dark'" hide-underline />
-        </tritonField>
+      <tritonField label="Confirm Password">
+          <q-input v-model="wallet.password_confirm" type="password" :dark="theme == 'dark'" borderless dense @keyup.enter="import_wallet" />
+      </tritonField>
 
-        <tritonField label="Confirm Password">
-            <q-input v-model="wallet.password_confirm" type="password" :dark="theme=='dark'" hide-underline />
-        </tritonField>
-
-        <q-field>
-            <q-btn color="primary" @click="import_wallet" label="Import Account" />
-        </q-field>
-
+      <q-btn class="submit-button" color="primary" label="Import Account" @click="import_wallet" />
     </div>
-
-</q-page>
+  </q-page>
 </template>
 
 <script>
@@ -80,7 +75,8 @@ export default {
     },
     validations: {
         wallet: {
-            name: { required }
+            name: { required },
+            path: { required }
         }
     },
     methods: {

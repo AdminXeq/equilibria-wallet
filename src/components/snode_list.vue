@@ -1,66 +1,61 @@
 <template>
-<div class="tx-list">
-
+  <div class="tx-list">
     <template v-if="tx_list_paged.length === 0">
-        <p class="q-pa-md q-mb-none">No transactions found</p>
+      <p class="q-pa-md q-mb-none">No transactions found</p>
     </template>
 
     <template v-else>
-        <q-infinite-scroll :handler="loadMore" ref="scroller">
-            <q-list link no-border :dark="theme=='dark'" class="triton-list tx-list">
-                <q-item class="triton-list-item transaction" v-for="(tx, index) in tx_list_paged" :key="tx.txid"
-                        @click.native="details(tx)" :class="'tx-'+tx.type">
-                    <q-item-side class="type">
-                        <div>{{ tx.type | typeToString }}</div>
-                    </q-item-side>
-                    <q-item-main class="main">
-                        <q-item-tile class="amount" label>
-                            <Formattriton :amount="tx.registration_height" />
-                        </q-item-tile>
-                        <q-item-tile sublabel>{{ tx.registration_height }}</q-item-tile>
-                    </q-item-main>
-                    <q-item-side class="meta">
-                        <q-item-tile label>
-                            <timeago :datetime="tx.registration_height*1000" :auto-update="60" />
-                        </q-item-tile>
-                        <q-item-tile sublabel>{{ formatHeight(tx) }}</q-item-tile>
-                    </q-item-side>
+      <q-infinite-scroll @load="loadMore" ref="scroller">
+        <q-list link no-border :dark="theme == 'dark'" class="triton-list tx-list">
+          <q-item v-for="tx in tx_list_paged" :key="`${tx.txid}-${tx.type}`" class="triton-list-item transaction"
+            :class="'tx-' + tx.type" @click.native="details(tx)">
+            <q-item-section class="type">
+              <div>{{ tx.type | typeToString }}</div>
+            </q-item-section>
+            <q-item-label class="main">
+              <q-item-label class="amount">
+                <Formattriton :amount="tx.registration_height" />
+              </q-item-label>
+              <q-item-label caption>{{ tx.registration_height }}</q-item-label>
+            </q-item-main>
+            <q-item-section class="meta">
+              <q-item-label>
+                <timeago :datetime="tx.registration_height * 1000" :auto-update="60" />
+              </q-item-label>
+              <q-item-label caption>{{ formatHeight(tx) }}</q-item-label>
+            </q-item-section>
 
-                    <q-context-menu>
-                        <q-list link separator style="min-width: 150px; max-height: 300px;">
-                            <q-item v-close-overlay
-                                    @click.native="details(tx)">
-                                <q-item-main label="Show details" />
-                            </q-item>
-
-                            <q-item v-close-overlay
-                                    @click.native="copyTxid(tx.registration_height, $event)">
-                                <q-item-main label="Copy transaction id" />
-                            </q-item>
-
-                            <q-item v-close-overlay
-                                    @click.native="openExplorer(tx.registration_height)">
-                                <q-item-main label="View on explorer" />
-                            </q-item>
-                        </q-list>
-                    </q-context-menu>
-
+            <q-menu context-menu>
+              <q-list link separator style="min-width: 150px; max-height: 300px;">
+                <q-item v-close-popup clickable @click.native="details(tx)">
+                  <q-item-section>Show details</q-item-section>
                 </q-item>
-                <q-spinner-dots slot="message" :size="40"></q-spinner-dots>
-            </q-list>
-        </q-infinite-scroll>
+
+                <q-item v-close-popup clickable @click.native="copyTxid(tx.registration_height, $event)">
+                  <q-item-section>Copy transaction id</q-item-section>
+                </q-item>
+
+                <q-item v-close-popup clickable @click.native="openExplorer(tx.registration_height)">
+                  <q-item-section>View on explorer</q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
+
+          </q-item>
+          <QSpinnerDots slot="message" :size="40"></QSpinnerDots>
+        </q-list>
+      </q-infinite-scroll>
     </template>
 
     <TxDetails ref="txDetails" />
-
-</div>
+  </div>
 </template>
 
 <script>
 const { clipboard } = require("electron")
 import { mapState } from "vuex"
 import { QSpinnerDots } from "quasar"
-import Identicon from "components/identicon"
+// import Identicon from "components/identicon"
 import TxTypeIcon from "components/tx_type_icon"
 import TxDetails from "components/tx_details"
 import Formattriton from "components/format_triton"
@@ -272,7 +267,7 @@ export default {
     },
     components: {
         QSpinnerDots,
-        Identicon,
+//        Identicon,
         TxTypeIcon,
         TxDetails,
         Formattriton
@@ -297,9 +292,9 @@ export default {
         }
 
         .type {
-
+            min-width: 100px;
+            max-width: 100px;
             div {
-                min-width: 100px;
                 margin-right: 8px;
             }
         }

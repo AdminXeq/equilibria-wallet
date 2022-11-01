@@ -1,28 +1,27 @@
 <template>
-<q-layout-footer class="status-footer">
+  <q-footer class="status-footer">
     <div class="status-line row items-center">
-        <div class="status row items-center">
-            <span>Status:</span>
-            <span class="status-text" :class="[status]">{{ status | upperCase }}</span>
-        </div>
-        <div class="row">
-            <template v-if="config_daemon.type !== 'remote'">
-                <div>Daemon: {{ daemon.info.height_without_bootstrap }} / {{ target_height }} ({{ daemon_local_pct }}%)</div>
-            </template>
+      <div class="status row items-center">
+        <span>Status:</span>
+        <span class="status-text" :class="[status]">{{ status | upperCase }}</span>
+      </div>
+      <div class="row">
+        <template v-if="config_daemon.type !== 'remote'">
+          <div>Daemon: {{ daemon.info.height_without_bootstrap }} / {{ target_height }} ({{ daemon_local_pct }}%)</div>
+        </template>
 
-            <template v-if="config_daemon.type !== 'local'">
-                <div>Remote: {{ daemon.info.height }}</div>
-            </template>
+        <template v-if="config_daemon.type !== 'local'">
+          <div>Remote: {{ daemon.info.height }}</div>
+        </template>
 
-            <div>Wallet: {{ wallet.info.height }} / {{ target_height }} ({{ wallet_pct }}%)</div>
-        </div>
-
+        <div>Wallet: {{ wallet.info.height }} / {{ target_height }} ({{ wallet_pct }}%)</div>
+      </div>
     </div>
     <div class="status-bars" :class="[status]">
-        <div v-bind:style="{ width: daemon_pct+'%' }"></div>
-        <div v-bind:style="{ width: wallet_pct+'%' }"></div>
+      <div v-bind:style="{ width: daemon_pct+'%' }"></div>
+      <div v-bind:style="{ width: wallet_pct+'%' }"></div>
     </div>
-</q-layout-footer>
+  </q-footer>
 </template>
 
 <script>

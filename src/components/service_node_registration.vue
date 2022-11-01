@@ -1,27 +1,28 @@
 <template>
-<div class="service-node-registration">
+  <div class="service-node-registration">
     <div class="q-pa-md">
         <div class="description q-mb-lg">
             Enter the <b>register_service_node</b> command produced by the daemon that is registering to become a Service Node using the "<b>prepare_registration</b>" command
         </div>
         <tritonField label="Service Node Command" :error="$v.registration_string.$error" :disabled="registration_status.sending">
             <q-input
-                v-model="registration_string"
+                v-model.trim="registration_string"
                 type="textarea"
-                :dark="theme=='dark'"
+                :dark="theme == 'dark'"
+                class="full-width text-area-triton"
                 @blur="$v.registration_string.$touch"
                 placeholder="register_service_node ..."
                 :disabled="registration_status.sending"
-                hide-underline
+                borderless
+                dense
+                @paste="onPaste"
             />
         </tritonField>
-        <q-field class="q-pt-sm">
-            <q-btn color="secondary" @click="register()" label="Register service node" :disabled="registration_status.sending"/>
-        </q-field>
+        <q-btn class="register button" color="primary" label="Register service node" :disabled="registration_status.sending" @click="register()" />
     </div>
 
-    <q-inner-loading :visible="registration_status.sending" :dark="theme=='dark'">
-        <q-spinner color="secondary" :size="30" />
+    <q-inner-loading :showing="registration_status.sending" :dark="theme == 'dark'">
+        <q-spinner color="primary" size="30" />
     </q-inner-loading>
 </div>
 </template>
@@ -50,13 +51,14 @@ export default {
     watch: {
         registration_status: {
             handler (val, old) {
-                if (val.code === old.code) return
-                switch (this.registration_status.code) {
+                if (val.code == old.code) return
+                const { code, message } = val;
+                switch (code) {
                 case 0:
                     this.$q.notify({
                         type: "positive",
                         timeout: 1000,
-                        message: this.registration_status.message
+                        message
                     })
                     this.$v.$reset()
                     this.registration_string = ""
@@ -65,7 +67,7 @@ export default {
                     this.$q.notify({
                         type: "negative",
                         timeout: 3000,
-                        message: this.registration_status.message
+                        message
                     })
                     break
                 }
@@ -74,7 +76,7 @@ export default {
         }
     },
     methods: {
-        register: function () {
+        async register() {
             this.$v.registration_string.$touch()
 
             if (this.$v.registration_string.$error) {
@@ -86,15 +88,20 @@ export default {
                 return
             }
 
-            this.showPasswordConfirmation({
+            let passwordDialog = await this.showPasswordConfirmation({
                 title: "Register service node",
                 noPasswordMessage: "Do you want to register the service node?",
                 ok: {
                     label: "REGISTER",
-                    color: "positive"
-
-                }
-            }).then(password => {
+                    color: "primary"
+                },
+                dark: this.theme == "dark",
+                color: this.theme == "dark" ? "white" : "dark"
+            })
+            passwordDialog
+              .onOk(password => {
+                // in case of no password
+                password = password || "";
                 this.$store.commit("gateway/set_snode_status", {
                     registration: {
                         code: 1,
@@ -104,10 +111,16 @@ export default {
                 })
                 this.$gateway.send("wallet", "register_service_node", {
                     password,
-                    string: this.registration_string
+                    string: this.registration_string.trim()
                 })
-            }).catch(() => {
             })
+            .onDismiss(() => {})
+            .onCancel(() => {});
+        },
+        onPaste () {
+          this.$nextTick(() => {
+            this.registration_string = this.registration_string.trim();
+          });
         }
     },
     mixins: [WalletPassword],
@@ -118,4 +131,7 @@ export default {
 </script>
 
 <style lang="scss">
+.register-button {
+  margin-top: 6px;
+}
 </style>

@@ -6,54 +6,66 @@
                 v-model="wallet.name"
                 placeholder="A name for your account"
                 @blur="$v.wallet.name.$touch"
-                :dark="theme=='dark'"
-                hide-underline
+                :dark="theme == 'dark'"
+                borderless
+                dense
                 />
         </tritonField>
 
         <tritonField class="q-mt-md" label="Mnemonic Seed" :error="$v.wallet.seed.$error">
             <q-input
                 v-model="wallet.seed"
+                class="full-width text-area-triton"
                 placeholder="25 (or 24) word Mnemonic Seed"
                 type="textarea"
                 @blur="$v.wallet.seed.$touch"
-                :dark="theme=='dark'"
-                hide-underline
+                :dark="theme == 'dark'"
+                borderless
+                dense
                 />
         </tritonField>
 
         <div class="row items-end q-mt-md">
-            <div class="col">
+            <div class="col-md-9 col-sm-8">
                 <tritonField v-if="wallet.refresh_type=='date'" label="Restore from date">
-                    <q-datetime v-model="wallet.refresh_start_date" type="date"
-                                modal :min="1492486495000" :max="Date.now()"
-                                :dark="theme=='dark'"
-                                hide-underline
-                                />
+                    <q-input v-model="wallet.refresh_start_date" mask="date" borderless dense>
+                      <template v-slot:addend>
+                        <q-icon v-if="wallet.refresh_type == 'date'" name="event" class="cursor-pointer">
+                          <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
+                            <q-date v-model="wallet.refresh_start_date" :dark="theme == 'dark'" :options="dateRangeOptions">
+                              <div class="row items-center justify-end">
+                                <q-btn v-close-popup label="Close" color="primary" flat />
+                              </div>
+                            </q-date>
+                          </q-popup-proxy>
+                        </q-icon>
+                      </template>
+                    </q-input>
                 </tritonField>
                 <tritonField v-else-if="wallet.refresh_type=='height'" label="Restore from block height" :error="$v.wallet.refresh_start_height.$error">
                     <q-input v-model="wallet.refresh_start_height" type="number"
                                 min="0"
                                 @blur="$v.wallet.refresh_start_height.$touch"
-                                :dark="theme=='dark'"
-                                hide-underline
+                                :dark="theme == 'dark'"
+                                borderless
+                                dense
                                 />
                 </tritonField>
             </div>
-            <div class="col-auto q-ml-sm">
-                <template v-if="wallet.refresh_type=='date'">
-                    <q-btn @click="wallet.refresh_type='height'" class="float-right" :text-color="theme=='dark'?'white':'dark'" flat>
-                        <div style="width: 80px;" class="text-center">
-                            <q-icon class="block" name="clear_all" />
-                            <div style="font-size:10px">Switch to<br/>height select</div>
+            <div class="col-sm-4 col-md-3">
+                <template v-if="wallet.refresh_type == 'date'">
+                    <q-btn class="restore-from-button" :text-color="theme == 'dark' ? 'white' : 'dark'" flat @click="wallet.refresh_type = 'height'">
+                        <div class="column justify-center items-center">
+                          <q-icon name="clear_all" />
+                          Switch to<br/>Height select
                         </div>
                     </q-btn>
                 </template>
-                <template v-else-if="wallet.refresh_type=='height'">
-                    <q-btn @click="wallet.refresh_type='date'" class="float-right" :text-color="theme=='dark'?'white':'dark'" flat>
-                        <div style="width: 80px;" class="text-center">
-                            <q-icon class="block" name="today" />
-                            <div style="font-size:10px">Switch to<br/>date select</div>
+                <template v-else-if="wallet.refresh_type == 'height'">
+                    <q-btn class="restore-from-button" :text-color="theme == 'dark' ? 'white' : 'dark'" flat @click="wallet.refresh_type = 'date'">
+                        <div class="column justify-center items-center">
+                            <q-icon name="today" />
+                            Switch to<br/>date select
                         </div>
                     </q-btn>
                 </template>
@@ -65,23 +77,25 @@
                 v-model="wallet.password"
                 placeholder="An optional password for the account"
                 type="password"
-                :dark="theme=='dark'"
-                hide-underline
-                />
+                :dark="theme == 'dark'"
+                borderless
+                dense
+                @keyup.enter="restore_wallet"
+            />
         </tritonField>
 
         <tritonField class="q-mt-md" label="Confirm Password">
             <q-input
                 v-model="wallet.password_confirm"
                 type="password"
-                :dark="theme=='dark'"
-                hide-underline
-                />
+                :dark="theme == 'dark'"
+                borderless
+                dense
+                @keyup.enter="restore_wallet"
+            />
         </tritonField>
 
-        <q-field>
-            <q-btn color="primary" @click="restore_wallet" label="Restore Account" />
-        </q-field>
+        <q-btn class="submit-button" color="primary" label="Restore Account" @click="restore_wallet" />
 
     </div>
 </q-page>
@@ -91,6 +105,11 @@
 import { required, numeric } from "vuelidate/lib/validators"
 import { mapState } from "vuex"
 import tritonField from "components/triton_field"
+import { date } from "quasar"
+
+const timeStampFirstBlock = 1541014386;
+const qDateFormat = "YYYY/MM/DD";
+let dateFirstBlock = date.formatDate(timeStampFirstBlock, qDateFormat);
 export default {
     data () {
         return {
@@ -99,8 +118,8 @@ export default {
                 seed: "",
                 refresh_type: "date",
                 refresh_start_height: 0,
-                refresh_start_date: 1525305600000, // timestamp of block 1
-                password: "",
+                refresh_start_date: timeStampFirstBlock, // timestamp of block 1
+                password: "",       
                 password_confirm: ""
             }
         }
@@ -198,6 +217,12 @@ export default {
 
             this.$gateway.send("wallet", "restore_wallet", this.wallet)
         },
+        // Ensures the date is valid
+        dateRangeOptions(dateSelected) {
+          const now = Date.now();
+          const formattedNow = date.formatDate(now, qDateFormat);
+          return dateSelected > timeStampFirstBlock && dateSelected <= formattedNow;
+        },
         cancel () {
             this.$router.replace({ path: "/wallet-select" })
         }
@@ -209,4 +234,8 @@ export default {
 </script>
 
 <style>
+.restore-from-button {
+  width: 100%;
+  height: 54px;
+}
 </style>
